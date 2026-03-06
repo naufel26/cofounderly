@@ -197,12 +197,12 @@
 
 @keyframes slideIn {
     from {
+        transform: translateY(20px);
         opacity: 0;
-        transform: translateY(-8px) scale(0.95);
     }
     to {
+        transform: translateY(0);
         opacity: 1;
-        transform: translateY(0) scale(1);
     }
 }
 
