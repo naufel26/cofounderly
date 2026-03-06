@@ -16,7 +16,8 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function NavUser() {
-    const { auth } = usePage().props;
+    // const { auth } = usePage().props;
+    const { auth } = usePage().props as any;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
 
@@ -27,7 +28,7 @@ export function NavUser() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
+                            className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group"
                             data-test="sidebar-menu-button"
                         >
                             <UserInfo user={auth.user} />

@@ -19,12 +19,12 @@ export default function Home() {
                 <CTA />
                 <Footer />
             </div>
-            <div className="rounded-lg bg-white p-8 shadow-md">
+            {/* <div className="rounded-lg bg-white p-8 shadow-md">
                 <h1 className="mb-4 text-2xl font-bold">Welcome Back!</h1>
                 <p className="text-gray-600">
                     This content is wrapped inside the SimpleLayout.
                 </p>
-            </div>
+            </div> */}
         </MainLayout>
     );
 }

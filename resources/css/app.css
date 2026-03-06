@@ -31,6 +31,9 @@
     --animation-glow: glow 3s ease-in-out infinite;
     --animation-slide-up: slideUp 0.6s ease-out forwards;
     --animation-fade-in: fadeIn 0.8s ease-out forwards;
+
+    --animation-slide-in: slideIn 0.2s ease-out;
+    --animation-fade-in: fadeIn 0.15s ease-out;
 }
 
 /* 3. The Lovable Design System (Always Light Mode) */
@@ -67,6 +70,10 @@
 }
 
 @layer base {
+    /* Fix the 'Moving Right' issue by overriding Radix scroll lock variables */
+    :root {
+        --removed-body-scroll-bar-size: 0px !important;
+    }
     * {
         @apply border-border;
     }
@@ -112,7 +119,7 @@
     }
 
     .glass-card {
-        @apply bg-card/80 border-border/50 border backdrop-blur-xl;
+        @apply border-border/50 bg-card/80 border backdrop-blur-xl;
     }
 
     .animate-float {
@@ -149,6 +156,12 @@
                 transparent 70%
             );
     }
+
+    .shadow-header {
+        box-shadow:
+            0 1px 3px 0 rgba(0, 0, 0, 0.05),
+            0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
 }
 
 @keyframes float {
@@ -182,6 +195,17 @@
     }
 }
 
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -212,4 +236,78 @@
     border-radius: inherit;
     border: 2px solid hsl(var(--primary));
     animation: pulse-ring 2s ease-out infinite;
+}
+
+@layer components {
+    /* .card-elevated {
+        @apply border-border/60 bg-card rounded-[20px] border shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)];
+    } */
+
+    .sidebar-link {
+        @apply hover:bg-secondary/50 flex items-center justify-between rounded-xl px-3 py-2 transition-all duration-200 active:scale-[0.98];
+    }
+
+    /* .bg-gradient-hero {
+        background: var(--gradient-hero);
+    } */
+
+    /* Refined card for the right sidebar to match the screenshot's 'soft' elevation */
+    /* .card-elevated {
+        @apply rounded-[22px] border border-slate-100 bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)];
+    } */
+
+    /* Soft Teal Badge */
+    .bg-\[#E6F6F4\] {
+        background-color: #e6f6f4;
+    }
+    .text-\[#2DAB94\] {
+        color: #2dab94;
+    }
+
+    /* Purple Badge for Investor */
+    .bg-\[#F3E8FF\] {
+        background-color: #f3e8ff;
+    }
+    .text-\[#9333EA\] {
+        color: #9333ea;
+    }
+
+    /* Post Button */
+    .bg-\[#B5E4DC\] {
+        background-color: #b5e4dc;
+    }
+
+    /* Enhanced card styling to match the image spacing */
+    .card-elevated {
+        @apply rounded-[20px] border border-slate-100 bg-white shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)];
+    }
+
+    /* Gradient for the 'Upgrade Now' button */
+    .bg-gradient-hero {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+    }
+    /* Fix transparency: Ensure the portal container is solid white */
+    [data-radix-popper-content-wrapper] {
+        z-index: 100 !important;
+        @apply !opacity-100;
+    }
+
+    .DropdownMenuContent {
+        /* Use '!' at the start for v4 importance */
+        @apply !border-slate-200 !bg-white !opacity-100 !shadow-xl;
+        @apply animate-slide-in;
+        background-color: white !important;
+    }
+}
+
+/* Prevent Radix/Shadcn from shifting the header when dropdowns open */
+body[data-radix-scroll-lock] {
+    padding-right: 0 !important;
+}
+
+/* Ensure the fixed header doesn't jump */
+header.fixed {
+    padding-right: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
 }

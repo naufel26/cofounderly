@@ -1,12 +1,12 @@
-import { Link } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import MainLayout from '@/layouts/main-layout';
-import { Logo } from '@/components/Logo';
 // import { supabase } from '@/integrations/supabase/client';
 
 const TOTAL_STEPS = 5;
@@ -99,44 +99,41 @@ export default function SignUp() {
     // const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
+    // Inertia useForm hook replaces local useState for form data
+    const { data, setData, post, processing, errors } = useForm({
         fullName: '',
         email: '',
         password: '',
         tagline: '',
         role: '',
-        lookingFor: [] as string[],
+        lookingFor: [],
         stage: '',
-        interests: [] as string[],
+        interests: [],
     });
 
-    const handleInputChange = (field: string, value: string) => {
-        setFormData({ ...formData, [field]: value });
+    const handleInputChange = (field, value) => {
+        setData(field, value);
     };
 
-    const handleMultiSelect = (
-        field: 'lookingFor' | 'interests',
-        value: string,
-    ) => {
-        const current = formData[field];
+    const handleMultiSelect = (field, value) => {
+        const current = data[field];
         if (current.includes(value)) {
-            setFormData({
-                ...formData,
-                [field]: current.filter((v) => v !== value),
-            });
+            setData(
+                field,
+                current.filter((v) => v !== value),
+            );
         } else {
-            setFormData({ ...formData, [field]: [...current, value] });
+            setData(field, [...current, value]);
         }
     };
 
-    const handleSingleSelect = (field: 'role' | 'stage', value: string) => {
-        setFormData({ ...formData, [field]: value });
+    const handleSingleSelect = (field, value) => {
+        setData(field, value);
     };
 
     const nextStep = () => {
         if (step < TOTAL_STEPS) setStep(step + 1);
     };
-
     const prevStep = () => {
         if (step > 1) setStep(step - 1);
     };
@@ -144,103 +141,39 @@ export default function SignUp() {
     const isStepValid = () => {
         switch (step) {
             case 1:
-                return (
-                    formData.fullName &&
-                    formData.email &&
-                    formData.password &&
-                    formData.password.length >= 6
-                );
+                return data.fullName && data.email && data.password.length >= 6;
             case 2:
-                return formData.role;
+                return data.role;
             case 3:
-                return formData.lookingFor.length > 0;
+                return data.lookingFor.length > 0;
             case 4:
-                return formData.stage;
+                return data.stage;
             case 5:
-                return formData.interests.length > 0;
+                return data.interests.length > 0;
             default:
                 return false;
         }
     };
 
-    const handleCreateAccount = async () => {
-        setIsLoading(true);
-
-        try {
-            // 1. Sign up user with Supabase Auth
-            // const { data: authData, error: authError } =
-            //     await supabase.auth.signUp({
-            //         email: formData.email,
-            //         password: formData.password,
-            //         options: {
-            //             emailRedirectTo: window.location.origin,
-            //         },
-            //     });
-
-            // if (authError) {
-            //     throw authError;
-            // }
-
-            // if (!authData.user) {
-            //     throw new Error('Failed to create user');
-            // }
-
-            // const userId = authData.user.id;
-
-            // // 2. Create profile
-            // const { error: profileError } = await supabase
-            //     .from('profiles')
-            //     .insert({
-            //         user_id: userId,
-            //         full_name: formData.fullName,
-            //         tagline: formData.tagline || null,
-            //         business_stage: formData.stage,
-            //         looking_for: formData.lookingFor,
-            //         interests: formData.interests,
-            //     });
-
-            // if (profileError) {
-            //     console.error('Profile error:', profileError);
-            //     throw profileError;
-            // }
-
-            // // 3. Create user role
-            // const { error: roleError } = await supabase
-            //     .from('user_roles')
-            //     .insert({
-            //         user_id: userId,
-            //         role: formData.role as
-            //             | 'founder'
-            //             | 'cofounder'
-            //             | 'investor'
-            //             | 'jobseeker'
-            //             | 'student'
-            //             | 'advisor',
-            //     });
-
-            // if (roleError) {
-            //     console.error('Role error:', roleError);
-            //     throw roleError;
-            // }
-
-            toast({
-                title: 'Account created!',
-                description:
-                    "Welcome to Cofounderly. Let's build something great!",
-            });
-
-            // navigate('/home');
-        } catch (error: any) {
-            console.error('Signup error:', error);
-            toast({
-                title: 'Error creating account',
-                description:
-                    error.message || 'Something went wrong. Please try again.',
-                variant: 'destructive',
-            });
-        } finally {
-            setIsLoading(false);
-        }
+    const handleCreateAccount = () => {
+        // Inertia post call to your Laravel route
+        post('/user-register', {
+            onSuccess: () => {
+                toast({
+                    title: 'Account created!',
+                    description:
+                        "Welcome to Cofounderly. Let's build something great!",
+                });
+            },
+            onError: (errors) => {
+                // If Laravel validation fails, Inertia maps them to the 'errors' object
+                toast({
+                    title: 'Error creating account',
+                    description: 'Please check the form for errors.',
+                    variant: 'destructive',
+                });
+            },
+        });
     };
 
     return (
@@ -303,7 +236,7 @@ export default function SignUp() {
                                         <Input
                                             id="fullName"
                                             placeholder="John Doe"
-                                            value={formData.fullName}
+                                            value={data.fullName}
                                             onChange={(e) =>
                                                 handleInputChange(
                                                     'fullName',
@@ -316,18 +249,16 @@ export default function SignUp() {
                                     <div>
                                         <Label htmlFor="email">Email</Label>
                                         <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="john@example.com"
-                                            value={formData.email}
+                                            value={data.email}
                                             onChange={(e) =>
-                                                handleInputChange(
-                                                    'email',
-                                                    e.target.value,
-                                                )
+                                                setData('email', e.target.value)
                                             }
-                                            className="mt-1.5"
                                         />
+                                        {errors.email && (
+                                            <p className="text-xs text-red-500">
+                                                {errors.email}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="password">
@@ -337,7 +268,7 @@ export default function SignUp() {
                                             id="password"
                                             type="password"
                                             placeholder="Create a strong password (min 6 characters)"
-                                            value={formData.password}
+                                            value={data.password}
                                             onChange={(e) =>
                                                 handleInputChange(
                                                     'password',
@@ -357,7 +288,7 @@ export default function SignUp() {
                                         <Input
                                             id="tagline"
                                             placeholder="e.g., Tech founder building fintech for SMEs"
-                                            value={formData.tagline}
+                                            value={data.tagline}
                                             onChange={(e) =>
                                                 handleInputChange(
                                                     'tagline',
@@ -392,12 +323,12 @@ export default function SignUp() {
                                                 )
                                             }
                                             className={`relative rounded-xl border-2 p-5 text-left transition-all duration-200 ${
-                                                formData.role === option.id
+                                                data.role === option.id
                                                     ? 'shadow-card-hover border-primary bg-accent'
                                                     : 'hover:bg-muted/50 border-border hover:border-primary/50'
                                             }`}
                                         >
-                                            {formData.role === option.id && (
+                                            {data.role === option.id && (
                                                 <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                                                     <Check className="h-3 w-3 text-primary-foreground" />
                                                 </div>
@@ -435,14 +366,14 @@ export default function SignUp() {
                                                 )
                                             }
                                             className={`relative rounded-xl border-2 p-4 text-center transition-all duration-200 ${
-                                                formData.lookingFor.includes(
+                                                data.lookingFor.includes(
                                                     option.id,
                                                 )
                                                     ? 'shadow-card-hover border-primary bg-accent'
                                                     : 'hover:bg-muted/50 border-border hover:border-primary/50'
                                             }`}
                                         >
-                                            {formData.lookingFor.includes(
+                                            {data.lookingFor.includes(
                                                 option.id,
                                             ) && (
                                                 <div className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
@@ -482,12 +413,12 @@ export default function SignUp() {
                                                 )
                                             }
                                             className={`relative rounded-xl border-2 p-4 text-left transition-all duration-200 ${
-                                                formData.stage === option.id
+                                                data.stage === option.id
                                                     ? 'shadow-card-hover border-primary bg-accent'
                                                     : 'hover:bg-muted/50 border-border hover:border-primary/50'
                                             }`}
                                         >
-                                            {formData.stage === option.id && (
+                                            {data.stage === option.id && (
                                                 <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                                                     <Check className="h-3 w-3 text-primary-foreground" />
                                                 </div>
@@ -525,7 +456,7 @@ export default function SignUp() {
                                                 )
                                             }
                                             className={`rounded-full border-2 px-5 py-3 font-medium transition-all duration-200 ${
-                                                formData.interests.includes(
+                                                data.interests.includes(
                                                     option.id,
                                                 )
                                                     ? 'border-primary bg-primary text-primary-foreground'
@@ -566,18 +497,12 @@ export default function SignUp() {
                                 <Button
                                     variant="hero"
                                     onClick={handleCreateAccount}
-                                    disabled={!isStepValid() || isLoading}
+                                    disabled={!isStepValid() || processing}
                                 >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Creating...
-                                        </>
+                                    {processing ? (
+                                        <Loader2 className="animate-spin" />
                                     ) : (
-                                        <>
-                                            Create Account
-                                            <ArrowRight className="ml-2 h-4 w-4" />
-                                        </>
+                                        'Create Account'
                                     )}
                                 </Button>
                             )}
