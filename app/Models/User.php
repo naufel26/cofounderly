@@ -62,4 +62,15 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    protected $appends = ['profile_photo_url'];
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        // If an avatar exists, return its storage URL,
+        // otherwise return a default UI-Avatar with the user's initials
+        return $this->avatar
+            ? asset('storage/' . $this->avatar)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=14B8A6&background=E6F6F4&font-size=0.4';
+    }
 }

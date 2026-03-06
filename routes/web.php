@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/laravel', function () {
     return Inertia::render('welcome', [
@@ -30,5 +31,11 @@ Route::post('user-register', [UserRegisterController::class, 'store'])
 Route::get('/feeds', [FeedController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('feeds');
+
+// Protect these routes with auth middleware
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+});
 
 require __DIR__ . '/settings.php';
