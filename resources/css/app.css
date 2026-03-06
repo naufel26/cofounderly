@@ -295,7 +295,7 @@
     .DropdownMenuContent {
         /* Use '!' at the start for v4 importance */
         @apply !border-slate-200 !bg-white !opacity-100 !shadow-xl;
-        @apply animate-slide-in;
+        /* @apply animate-slide-in; */
         background-color: white !important;
     }
 }
