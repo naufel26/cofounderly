@@ -36,7 +36,7 @@ Route::get('/feeds', [FeedController::class, 'index'])
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
-    Route::post('/profile/update-profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/update-profile', [ProfileController::class, 'updateProfile'])->name('profile.updateProfile');
 });
 
 require __DIR__ . '/settings.php';
