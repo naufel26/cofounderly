@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class User extends Authenticatable
 {
@@ -28,6 +30,7 @@ class User extends Authenticatable
         'looking_for',
         'stage',
         'interests',
+        'avatar',
     ];
 
     protected $casts = [
@@ -65,12 +68,13 @@ class User extends Authenticatable
 
     protected $appends = ['profile_photo_url'];
 
-    public function getProfilePhotoUrlAttribute()
+    protected function profilePhotoUrl(): Attribute
     {
-        // If an avatar exists, return its storage URL,
-        // otherwise return a default UI-Avatar with the user's initials
-        return $this->avatar
-            ? asset('storage/' . $this->avatar)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=14B8A6&background=E6F6F4&font-size=0.4';
+        return Attribute::get(function () {
+            // Check if avatar exists and return public URL, otherwise fallback to UI-Avatars
+            return $this->avatar
+                ? Storage::disk('public')->url($this->avatar)
+                : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=2DAB94&background=E6F6F4';
+        });
     }
 }

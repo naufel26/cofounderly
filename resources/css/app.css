@@ -5,7 +5,7 @@
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 
 /* 1. Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap'); */
 
 /* 2. Map the Tailwind v4 Theme to your Lovable variables */
 @theme {
@@ -92,6 +92,18 @@
         font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
         @apply font-bold tracking-tight;
     }
+
+    /* Force all Shadcn/Radix popups to have a solid background */
+    [data-radix-popper-content-wrapper] {
+        z-index: 50 !important;
+    }
+
+    .SelectContent,
+    [role='listbox'] {
+        background-color: white !important;
+        border: 1px solid #e2e8f0; /* slate-200 */
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
 }
 
 @layer utilities {
@@ -119,7 +131,7 @@
     }
 
     .glass-card {
-        @apply border-border/50 bg-card/80 border backdrop-blur-xl;
+        @apply border border-border/50 bg-card/80 backdrop-blur-xl;
     }
 
     .animate-float {
@@ -161,6 +173,35 @@
         box-shadow:
             0 1px 3px 0 rgba(0, 0, 0, 0.05),
             0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    /* The custom-scrollbar class */
+    .custom-scrollbar {
+        /* Standard properties for Firefox */
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+
+        /* Ensures the scrollbar doesn't shift the layout when it appears */
+        scrollbar-gutter: stable;
+    }
+
+    /* Webkit properties for Chrome, Safari, and Edge */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* slate-300 */
+        border-radius: 20px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #2dab94; /* Cofounderly Teal */
     }
 }
 
@@ -244,7 +285,7 @@
     } */
 
     .sidebar-link {
-        @apply hover:bg-secondary/50 flex items-center justify-between rounded-xl px-3 py-2 transition-all duration-200 active:scale-[0.98];
+        @apply flex items-center justify-between rounded-xl px-3 py-2 transition-all duration-200 hover:bg-secondary/50 active:scale-[0.98];
     }
 
     /* .bg-gradient-hero {

@@ -1,4 +1,4 @@
-import { usePage, useForm } from '@inertiajs/react';
+import { usePage, useForm, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Edit2,
@@ -7,29 +7,12 @@ import {
     Link2,
     CalendarDays,
     Users,
-    X,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { EditProfileModal } from './EditProfileModal'; // Adjust path accordingly
 
 export default function Show() {
     const { auth } = usePage().props as any;
@@ -38,60 +21,39 @@ export default function Show() {
     const [isUploading, setIsUploading] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Form for profile details - Unified destructuring
-    const { data, setData, post, processing, errors } = useForm({
-        name: user?.name || '',
-        last_name: user?.last_name || '',
-        tagline: user?.tagline || '',
-        location: user?.location || '',
-        linkedin_url: user?.linkedin_url || '',
-        bio: user?.bio || '',
-        professional_summary: user?.professional_summary || '',
-        role: user?.role || 'Founder',
-        looking_for: user?.looking_for || 'Cofounder',
-        business_stage: user?.business_stage || 'MVP',
-        skills: user?.skills || [
-            'Product Management',
-            'Software Engineering',
-            'Business Development',
-        ],
-    });
+    // const { post } = useForm();
 
-    const submitProfile = (e: React.FormEvent) => {
-        e.preventDefault();
-        post('/profile/update', {
-            onSuccess: () => {
-                setIsDialogOpen(false);
-                toast.success('Profile updated successfully!');
-            },
-        });
-    };
+    const { data, setData, post } = useForm({
+        avatar: null as File | null,
+    });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
         if (file) {
+            // Create a native browser FormData object
+            const formData = new FormData();
+            formData.append('avatar', file);
+
             setIsUploading(true);
-            // We use the same post helper from useForm but for a different endpoint
-            post('/profile/avatar', {
-                // @ts-ignore - manual addition for file upload
-                avatar: file,
+
+            // Use router.post for direct multipart handling
+            router.post('/profile/avatar', formData, {
                 forceFormData: true,
                 onSuccess: () => {
-                    setIsUploading(false);
                     toast.success('Photo updated!');
+                    if (fileInputRef.current) fileInputRef.current.value = '';
                 },
-                onError: () => setIsUploading(false),
-            } as any);
+                onError: (errors) => {
+                    toast.error(errors.avatar || 'Failed to upload photo');
+                    console.error('Server Errors:', errors);
+                },
+                onFinish: () => {
+                    setIsUploading(false);
+                },
+            });
         }
     };
-
-    const removeSkill = (skillToRemove: string) => {
-        setData(
-            'skills',
-            data.skills.filter((skill: string) => skill !== skillToRemove),
-        );
-    };
-
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             <Toaster position="top-right" />
@@ -105,257 +67,28 @@ export default function Show() {
                     >
                         <ArrowLeft className="h-4 w-4" /> Back to Feed
                     </a>
+                    <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-slate-900">
+                        My Profile
+                    </h1>
 
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="h-10 gap-2 rounded-xl bg-[#2DAB94] px-5 font-bold text-white transition-all hover:bg-[#248d7a]">
-                                <Edit2 className="h-4 w-4" /> Edit Profile
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="dialog-wide flex max-h-[90vh] flex-col overflow-hidden rounded-2xl border-none p-0">
-                            <form
-                                onSubmit={submitProfile}
-                                className="flex h-full flex-col"
-                            >
-                                {/* Header - Stays fixed at top */}
-                                <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white p-6">
-                                    <DialogTitle className="text-xl font-bold text-slate-900">
-                                        Edit Profile
-                                    </DialogTitle>
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="rounded-xl bg-[#2DAB94] px-6 font-bold hover:bg-[#248d7a]"
-                                    >
-                                        Save Changes
-                                    </Button>
-                                </div>
-
-                                {/* Content - Increased width & custom scrollbar */}
-                                <div className="custom-scrollbar flex-1 space-y-8 overflow-y-auto p-8">
-                                    {/* Basic Information Section */}
-                                    <section className="space-y-6">
-                                        <div className="flex items-center justify-between border-b pb-2">
-                                            <h3 className="text-lg font-bold text-slate-800">
-                                                Basic Information
-                                            </h3>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label>First Name</Label>
-                                                <Input
-                                                    value={data.name}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'name',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="h-11 rounded-xl shadow-sm"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Last Name</Label>
-                                                <Input
-                                                    value={data.last_name}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'last_name',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="h-11 rounded-xl shadow-sm"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Tagline</Label>
-                                            <Input
-                                                value={data.tagline}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'tagline',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="h-11 rounded-xl shadow-sm"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Location</Label>
-                                            <Input
-                                                value={data.location}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'location',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="h-11 rounded-xl shadow-sm"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>LinkedIn Profile URL</Label>
-                                            <Input
-                                                value={data.linkedin_url}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'linkedin_url',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="h-11 rounded-xl shadow-sm"
-                                            />
-                                            <p className="text-[11px] text-slate-400">
-                                                Recommended for credibility
-                                            </p>
-                                        </div>
-                                    </section>
-
-                                    {/* About Section */}
-                                    <section className="space-y-4">
-                                        <h3 className="border-b pb-2 text-lg font-bold text-slate-800">
-                                            About
-                                        </h3>
-                                        <div className="space-y-2">
-                                            <Label>Bio</Label>
-                                            <Textarea
-                                                value={data.bio}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'bio',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="min-h-[120px] resize-none rounded-xl"
-                                            />
-                                            <p className="text-right text-xs text-slate-400">
-                                                {data.bio?.length || 0}/300
-                                                characters
-                                            </p>
-                                        </div>
-                                    </section>
-
-                                    {/* Professional Info Selects */}
-                                    <div className="space-y-4">
-                                        <h3 className="border-b pb-2 font-bold text-slate-900">
-                                            Professional Information
-                                        </h3>
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label>Role</Label>
-                                                <Select
-                                                    value={data.role}
-                                                    onValueChange={(v) =>
-                                                        setData('role', v)
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Founder">
-                                                            Founder
-                                                        </SelectItem>
-                                                        <SelectItem value="Investor">
-                                                            Investor
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Looking For</Label>
-                                                <Select
-                                                    value={data.looking_for}
-                                                    onValueChange={(v) =>
-                                                        setData(
-                                                            'looking_for',
-                                                            v,
-                                                        )
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Cofounder">
-                                                            Cofounder
-                                                        </SelectItem>
-                                                        <SelectItem value="Advisor">
-                                                            Advisor
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>
-                                                    Current Business Stage
-                                                </Label>
-                                                <Select
-                                                    value={data.business_stage}
-                                                    onValueChange={(v) =>
-                                                        setData(
-                                                            'business_stage',
-                                                            v,
-                                                        )
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Idea">
-                                                            Idea
-                                                        </SelectItem>
-                                                        <SelectItem value="MVP">
-                                                            MVP
-                                                        </SelectItem>
-                                                        <SelectItem value="Scaling">
-                                                            Scaling
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Skills Tags */}
-                                    <div className="space-y-4 pb-6">
-                                        <h3 className="border-b pb-2 font-bold text-slate-900">
-                                            Skills
-                                        </h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {data.skills.map(
-                                                (skill: string) => (
-                                                    <span
-                                                        key={skill}
-                                                        className="flex items-center gap-1 rounded-full bg-[#E6F6F4] px-3 py-1 text-xs font-bold text-[#2DAB94]"
-                                                    >
-                                                        {skill}{' '}
-                                                        <X
-                                                            className="h-3 w-3 cursor-pointer"
-                                                            onClick={() =>
-                                                                removeSkill(
-                                                                    skill,
-                                                                )
-                                                            }
-                                                        />
-                                                    </span>
-                                                ),
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
+                    <Button
+                        onClick={() => setIsDialogOpen(true)}
+                        className="h-10 gap-2 rounded-xl bg-[#2DAB94] px-5 font-bold text-white transition-all hover:bg-[#248d7a]"
+                    >
+                        <Edit2 className="h-4 w-4" /> Edit Profile
+                    </Button>
                 </div>
             </div>
 
-            {/* Main Content Area */}
+            {/* Render the Modal here */}
+            <EditProfileModal
+                user={user}
+                isOpen={isDialogOpen}
+                onClose={setIsDialogOpen}
+            />
+
             <div className="mx-auto mt-6 max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-                {/* Profile Header */}
+                {/* 2. Main Profile Header Card */}
                 <div className="card-elevated overflow-hidden bg-white">
                     <div className="h-40 bg-gradient-to-r from-[#2DAB94] to-[#F1B981]" />
                     <div className="-mt-16 flex flex-col items-start gap-4 px-8 pb-8">
@@ -405,16 +138,16 @@ export default function Show() {
                                 <span className="flex items-center gap-1 text-teal-600">
                                     <Link2 className="h-4 w-4" /> LinkedIn
                                 </span>
-                                <span className="flex items-center gap-1">
-                                    <CalendarDays className="h-4 w-4" /> Joined
-                                    January 2024
+                                <span className="flex items-center gap-1 font-semibold text-slate-700">
+                                    <Users className="h-4 w-4" /> 234
+                                    connections
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Info Sections */}
+                {/* About & Summary Sections */}
                 <div className="card-elevated bg-white p-8">
                     <h4 className="mb-4 text-xl font-bold">About</h4>
                     <p className="text-slate-700">
@@ -423,23 +156,12 @@ export default function Show() {
                 </div>
 
                 <div className="card-elevated bg-white p-8">
-                    <h4 className="mb-4 text-xl font-bold">
-                        Professional Summary
-                    </h4>
-                    <p className="text-slate-700">
-                        {user?.professional_summary ||
-                            'No professional summary provided.'}
-                    </p>
-                </div>
-
-                {/* Professional Info Grid */}
-                <div className="card-elevated bg-white p-8">
                     <h4 className="mb-6 text-xl font-bold">
                         Professional Information
                     </h4>
                     <div className="grid grid-cols-3 gap-8">
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                                 Role
                             </p>
                             <span className="mt-2 inline-block rounded-lg bg-[#E6F6F4] px-3 py-1 text-xs font-bold text-[#2DAB94]">
@@ -447,7 +169,7 @@ export default function Show() {
                             </span>
                         </div>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                                 Looking For
                             </p>
                             <p className="mt-2 font-bold text-slate-900">
@@ -455,7 +177,7 @@ export default function Show() {
                             </p>
                         </div>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                                 Business Stage
                             </p>
                             <p className="mt-2 font-bold text-slate-900">
