@@ -49,7 +49,7 @@ class ProfileController extends Controller
         return back();
     }
 
-    public function update(Request $request): RedirectResponse
+    public function updateProfile(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],

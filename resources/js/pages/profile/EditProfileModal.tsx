@@ -46,7 +46,7 @@ export function EditProfileModal({
 
     const submitProfile = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/profile/update', {
+        post('/profile/update-profile', {
             onSuccess: () => {
                 onClose(false);
                 toast.success('Profile updated successfully!');
