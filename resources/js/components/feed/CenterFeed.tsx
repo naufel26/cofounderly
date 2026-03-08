@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import {
     Image,
     Link2,
@@ -9,54 +9,109 @@ import {
     Share2,
     Plus,
     Type,
+    Loader2,
 } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { CreatePost } from './CreatePost';
+import { PostCard } from './PostCard';
+import { PostSkeleton } from './PostSkeleton';
 
 export const CenterFeed = () => {
-    const { auth } = usePage().props as any;
+    const { auth, posts } = usePage().props as any;
     const user = auth.user;
+
+    // State management
+    const [allPosts, setAllPosts] = useState<any[]>([]);
+    const [isLoadingInitial, setIsLoadingInitial] = useState(!posts); // For the Skeletons
+    const [isLoadingMore, setIsLoadingMore] = useState(false); // For the bottom spinner
+
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+
+    // 2. Handle Initial Lazy Load & Data Merging
+    useEffect(() => {
+        if (!posts) {
+            // First visit: Fetch the initial page
+            router.reload({
+                only: ['posts'],
+                onSuccess: () => setIsLoadingInitial(false),
+                onFinish: () => setIsLoadingInitial(false),
+            });
+        } else {
+            // Data has arrived: turn off loaders and merge posts
+            setIsLoadingInitial(false);
+            setIsLoadingMore(false);
+            setAllPosts((prev) =>
+                posts.current_page === 1
+                    ? posts.data
+                    : [...prev, ...posts.data],
+            );
+        }
+    }, [posts]);
+
+    // 3. Handle Infinite Scroll Trigger
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                // If we hit the bottom target, have a next page, and aren't already loading
+                if (
+                    entries[0].isIntersecting &&
+                    posts?.next_page_url &&
+                    !isLoadingMore &&
+                    !isLoadingInitial
+                ) {
+                    setIsLoadingMore(true);
+                    router.reload({
+                        data: { page: posts.current_page + 1 },
+                        only: ['posts'],
+                        preserveScroll: true, // Keep user at their current scroll position
+                    });
+                }
+            },
+            { threshold: 1.0 },
+        );
+
+        if (loadMoreRef.current) observer.observe(loadMoreRef.current);
+        return () => observer.disconnect();
+    }, [posts?.next_page_url, isLoadingMore, isLoadingInitial]);
 
     return (
         <div className="min-w-0 flex-1 space-y-4">
-            {/* 1. Create Post Card */}
-            <div className="card-elevated p-4">
-                <div className="flex gap-4">
-                    <Avatar className="h-10 w-10 shrink-0">
-                        <AvatarImage src={user?.profile_photo_url} />
-                        <AvatarFallback className="bg-slate-200 text-slate-600">
-                            {user?.name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                        <div className="min-h-[80px] rounded-2xl bg-slate-50/80 p-4">
-                            <textarea
-                                placeholder="Share your startup idea, update, or ask for help..."
-                                className="w-full resize-none border-none bg-transparent p-0 text-[15px] leading-relaxed placeholder:text-slate-400 focus:ring-0"
-                            />
-                        </div>
+            <CreatePost user={user} />
+            {/* Render Initial Skeletons OR the Feed */}
+            {isLoadingInitial ? (
+                <>
+                    <PostSkeleton />
+                    <PostSkeleton />
+                    <PostSkeleton />
+                </>
+            ) : (
+                <>
+                    {/* Render actual posts */}
+                    {allPosts.map((post) => (
+                        <PostCard key={`post-${post.id}`} post={post} />
+                    ))}
 
-                        <div className="mt-4 flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                                <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-50">
-                                    <Type className="h-4 w-4" />
-                                </button>
-                                <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-50">
-                                    <Link2 className="h-4 w-4" />
-                                </button>
-                                <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-50">
-                                    <Image className="h-4 w-4" />
-                                </button>
+                    {/* 4. Bottom Target & Pagination Spinner */}
+                    <div
+                        ref={loadMoreRef}
+                        className="flex h-20 items-center justify-center"
+                    >
+                        {isLoadingMore && (
+                            <div className="flex items-center gap-2 text-sm font-medium text-slate-400">
+                                <Loader2 className="h-5 w-5 animate-spin text-[#2DAB94]" />
+                                Loading older posts...
                             </div>
-
-                            <Button className="flex h-10 gap-2 rounded-xl border-none bg-[#B5E4DC] px-5 font-bold text-[#2DAB94] transition-all hover:bg-[#a2dcd2] active:scale-95">
-                                <Send className="h-4 w-4" />
-                                Post
-                            </Button>
-                        </div>
+                        )}
+                        {!posts?.next_page_url && allPosts.length > 0 && (
+                            <p className="text-sm text-slate-400">
+                                You're all caught up!
+                            </p>
+                        )}
                     </div>
-                </div>
-            </div>
+                </>
+            )}
 
             {/* 2. Main Feed Post - Sarah Chen */}
             <div className="card-elevated p-4 pb-2">
@@ -71,7 +126,7 @@ export const CenterFeed = () => {
                                 <h4 className="text-[15px] font-bold text-slate-900">
                                     Sarah Chen
                                 </h4>
-                                <span className="rounded-md bg-[#E6F6F4] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2DAB94]">
+                                <span className="rounded-md bg-[#E6F6F4] px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#2DAB94] uppercase">
                                     Founder
                                 </span>
                             </div>
@@ -131,10 +186,8 @@ export const CenterFeed = () => {
                     </button>
                 </div>
             </div>
-
-            {/* 3. Suggested for you - Alex Rivera */}
             <div className="card-elevated p-4">
-                <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <p className="mb-4 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     Suggested for you
                 </p>
                 <div className="flex items-start justify-between">
@@ -148,7 +201,7 @@ export const CenterFeed = () => {
                                 <h4 className="text-[15px] font-bold text-slate-900">
                                     Alex Rivera
                                 </h4>
-                                <span className="rounded-md bg-[#F3E8FF] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9333EA]">
+                                <span className="rounded-md bg-[#F3E8FF] px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#9333EA] uppercase">
                                     Investor
                                 </span>
                             </div>

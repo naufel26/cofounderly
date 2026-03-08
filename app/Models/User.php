@@ -10,6 +10,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -76,5 +77,10 @@ class User extends Authenticatable
                 ? Storage::disk('public')->url($this->avatar)
                 : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=2DAB94&background=E6F6F4';
         });
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class)->latest();
     }
 }

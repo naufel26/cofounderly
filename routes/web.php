@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/laravel', function () {
@@ -37,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::post('/profile/update-profile', [ProfileController::class, 'updateProfile'])->name('profile.updateProfile');
+    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 });
 
 require __DIR__ . '/settings.php';
