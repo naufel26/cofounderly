@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -16,11 +17,13 @@ class PostController extends Controller
             'content' => 'required_without:media|string|nullable',
             'media.*' => 'nullable|image|max:5120', // 5MB max per image
             'type'    => 'required|in:text,media,share',
+            'original_post_id' => 'nullable|exists:posts,id',
         ]);
 
         $post = $request->user()->posts()->create([
             'content' => $validated['content'],
             'type'    => $validated['type'],
+            'original_post_id' => $validated['original_post_id'] ?? null,
         ]);
 
         // Handle multiple media uploads
@@ -35,5 +38,33 @@ class PostController extends Controller
         }
 
         return back()->with('success', 'Post created successfully!');
+    }
+
+    public function toggleLike(Post $post)
+    {
+        $like = $post->likes()->where('user_id', auth()->id())->first();
+
+        if ($like) {
+            $like->delete(); // Unlike
+        } else {
+            $post->likes()->create(['user_id' => auth()->id()]); // Like
+        }
+
+        return back();
+    }
+
+    public function storeComment(Request $request, Post $post)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $post->comments()->create([
+            'user_id' => auth()->id(),
+            'content' => $request->content,
+        ]);
+
+        // return back() tells Inertia to seamlessly refresh the props (including the new comment)
+        return back();
     }
 }
