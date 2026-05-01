@@ -3,19 +3,22 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasRoles, HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, HasRoles, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -32,13 +35,23 @@ class User extends Authenticatable
         'stage',
         'interests',
         'avatar',
+        'location',
+        'linkedin_url',
+        'website',
+        'bio',
+        'professional_summary',
+        'business_stage',
+        'skills',
+        'experience',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'looking_for' => 'array', // Automatically handle JSON
-        'interests' => 'array',   // Automatically handle JSON
+        'looking_for' => 'array',
+        'interests' => 'array',
+        'skills' => 'array',
+        'experience' => 'array',
     ];
 
     /**
@@ -75,12 +88,47 @@ class User extends Authenticatable
             // Check if avatar exists and return public URL, otherwise fallback to UI-Avatars
             return $this->avatar
                 ? Storage::disk('public')->url($this->avatar)
-                : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=2DAB94&background=E6F6F4';
+                : 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=2DAB94&background=E6F6F4';
         });
     }
 
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class)->latest();
+    }
+
+    public function sentConnections(): HasMany
+    {
+        return $this->hasMany(Connection::class, 'sender_id');
+    }
+
+    public function receivedConnections(): HasMany
+    {
+        return $this->hasMany(Connection::class, 'receiver_id');
+    }
+
+    /**
+     * Scope to exclude users the given user has any connection with (any status).
+     */
+    public function statuses(): HasMany
+    {
+        return $this->hasMany(Status::class);
+    }
+
+    public function activeStatus(): HasOne
+    {
+        return $this->hasOne(Status::class)->where('expires_at', '>', now())->latestOfMany();
+    }
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class);
+    }
+
+    public function scopeWithoutConnectionTo(Builder $query, int $userId): Builder
+    {
+        return $query
+            ->whereNotIn('id', Connection::select('receiver_id')->where('sender_id', $userId))
+            ->whereNotIn('id', Connection::select('sender_id')->where('receiver_id', $userId));
     }
 }

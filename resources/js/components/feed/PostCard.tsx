@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {
@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CommentBox } from './CommentBox';
+import { ConnectButton } from './ConnectButton';
 
 dayjs.extend(relativeTime);
 
@@ -22,6 +23,8 @@ interface PostCardProps {
 }
 
 export const PostCard = ({ post }: PostCardProps) => {
+    const { auth } = usePage().props as any;
+
     // Optimistic Like State
     const [isLiked, setIsLiked] = useState(post.is_liked || false);
     const [likeCount, setLikeCount] = useState(post.likes_count || 0);
@@ -105,26 +108,39 @@ export const PostCard = ({ post }: PostCardProps) => {
                 {/* Header Info */}
                 <div className="mb-4 flex items-start justify-between">
                     <div className="flex gap-3">
-                        <Avatar className="h-12 w-12 rounded-full ring-2 ring-white">
-                            <AvatarImage src={post.user?.profile_photo_url} />
-                            <AvatarFallback className="bg-slate-100 text-slate-600">
-                                {post.user?.name?.charAt(0) || 'U'}
-                            </AvatarFallback>
-                        </Avatar>
+                        <Link href={`/profile/${post.user?.id}`} className="shrink-0">
+                            <Avatar className="h-12 w-12 rounded-full ring-2 ring-white transition-opacity hover:opacity-90">
+                                <AvatarImage src={post.user?.profile_photo_url} />
+                                <AvatarFallback className="bg-slate-100 text-slate-600">
+                                    {post.user?.name?.charAt(0) || 'U'}
+                                </AvatarFallback>
+                            </Avatar>
+                        </Link>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h4 className="text-[15px] font-bold text-slate-900">
+                                <Link
+                                    href={`/profile/${post.user?.id}`}
+                                    className="text-[15px] font-bold text-slate-900 hover:underline"
+                                >
                                     {post.user?.name}
-                                </h4>
+                                </Link>
                             </div>
                             <p className="mt-1 text-[11px] text-slate-400">
                                 {dayjs(post.created_at).fromNow()}
                             </p>
                         </div>
                     </div>
-                    <button className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-50">
-                        <MoreHorizontal className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {post.user?.id !== auth?.user?.id && (
+                            <ConnectButton
+                                userId={post.user?.id}
+                                connectionStatus={post.connection_status}
+                            />
+                        )}
+                        <button className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-50">
+                            <MoreHorizontal className="h-5 w-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Text Content */}
@@ -158,13 +174,11 @@ export const PostCard = ({ post }: PostCardProps) => {
                                 : 'text-slate-600 hover:text-[#2DAB94]'
                         }`}
                     >
-                        {/* Fill the icon if liked */}
                         <ThumbsUp
                             className={`h-4.5 w-4.5 ${isLiked ? 'fill-current' : ''}`}
                         />
                         Like
                     </button>
-                    {/* Toggle Comment Box Visibility */}
                     <button
                         onClick={() => setShowComments(!showComments)}
                         className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-colors hover:bg-slate-50 ${
@@ -181,9 +195,10 @@ export const PostCard = ({ post }: PostCardProps) => {
                     <button className="flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#2DAB94]">
                         <Share2 className="h-4.5 w-4.5" /> Share
                     </button>
-                    {/* Render the CommentBox conditionally */}
-                    {showComments && <CommentBox post={post} />}
                 </div>
+
+                {/* Comment section sits below the action row */}
+                {showComments && <CommentBox post={post} />}
             </div>
 
             {/* Lightbox Overlay */}

@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     Eye,
     Users,
@@ -18,6 +18,12 @@ interface SidebarLinkProps {
     count?: number;
 }
 
+interface ConnectionStats {
+    connected: number;
+    pending_received: number;
+    pending_sent: number;
+}
+
 const SidebarLink = ({ icon, label, count }: SidebarLinkProps) => (
     <button className="sidebar-link group w-full">
         <span className="flex items-center gap-3">
@@ -35,8 +41,9 @@ const SidebarLink = ({ icon, label, count }: SidebarLinkProps) => (
 );
 
 export const LeftSidebar = () => {
-    const { auth } = usePage().props as any;
-    const user = auth?.user; // The '?' prevents the crash if auth is missing
+    const { auth, connection_stats } = usePage().props as { auth: { user: any }; connection_stats?: ConnectionStats };
+    const user = auth?.user;
+    const stats: ConnectionStats = connection_stats ?? { connected: 0, pending_received: 0, pending_sent: 0 };
 
     return (
         <aside className="sticky top-20 h-fit w-64 shrink-0 space-y-4">
@@ -44,16 +51,20 @@ export const LeftSidebar = () => {
             <div className="card-elevated overflow-hidden">
                 <div className="bg-gradient-hero h-16" />
                 <div className="px-4 pb-4">
-                    <Avatar className="border-card -mt-8 h-16 w-16 border-4 shadow-sm">
-                        <AvatarImage src={user.profile_photo_url} />
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                            {user.name?.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
+                    <Link href="/profile">
+                        <Avatar className="border-card -mt-8 h-16 w-16 border-4 shadow-sm transition-opacity hover:opacity-90">
+                            <AvatarImage src={user.profile_photo_url} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                                {user.name?.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
+                    </Link>
 
-                    <h3 className="text-foreground mt-3 font-bold leading-tight">
-                        {user.name}
-                    </h3>
+                    <Link href="/profile" className="mt-3 block hover:underline">
+                        <h3 className="text-foreground font-bold leading-tight">
+                            {user.name}
+                        </h3>
+                    </Link>
                     <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                         {user.tagline ||
                             'Building the future of startup ecosystems'}
@@ -77,7 +88,7 @@ export const LeftSidebar = () => {
                                 Connections
                             </span>
                             <span className="text-primary text-xs font-bold">
-                                342
+                                {stats.connected}
                             </span>
                         </div>
                     </div>
@@ -93,22 +104,22 @@ export const LeftSidebar = () => {
                     <SidebarLink
                         icon={<Users className="h-4 w-4" />}
                         label="Connected"
-                        count={342}
+                        count={stats.connected}
                     />
                     <SidebarLink
                         icon={<Clock className="h-4 w-4" />}
                         label="Pending"
-                        count={5}
+                        count={stats.pending_received}
                     />
                     <SidebarLink
                         icon={<UserX className="h-4 w-4" />}
                         label="Ignored"
-                        count={12}
+                        count={0}
                     />
                     <SidebarLink
                         icon={<Send className="h-4 w-4" />}
                         label="Sent"
-                        count={8}
+                        count={stats.pending_sent}
                     />
                 </div>
             </div>

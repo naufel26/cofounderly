@@ -1,14 +1,13 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
-    Search,
     Home,
     MessageSquare,
-    Bell,
     ChevronDown,
     Sparkles,
 } from 'lucide-react';
-import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { NotificationDropdown } from './NotificationDropdown';
+import { SearchDropdown } from './SearchDropdown';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,12 +15,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-
 export const TopNavigation = () => {
     const { auth } = usePage().props as any;
-    const user = auth?.user; // The '?' prevents the crash if auth is missing
-    const [searchFocused, setSearchFocused] = useState(false);
+    const user = auth?.user;
 
     return (
         <header className="border-border/60 fixed left-0 right-0 top-0 z-50 border-b bg-white/80 backdrop-blur-md">
@@ -39,19 +35,9 @@ export const TopNavigation = () => {
                     </span>
                 </Link>
 
-                {/* 2. Search Bar - Styled to match screenshot */}
-                <div className="max-w-md flex-1 px-4">
-                    <div
-                        className={`relative transition-all duration-200 ${searchFocused ? 'scale-[1.01]' : ''}`}
-                    >
-                        <Search className="h-4.5 w-4.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <Input
-                            placeholder="Search founders, startups, ideas, advisors..."
-                            className="h-11 w-full rounded-xl border-slate-100 bg-slate-50/50 pl-11 text-sm placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-teal-500/10"
-                            onFocus={() => setSearchFocused(true)}
-                            onBlur={() => setSearchFocused(false)}
-                        />
-                    </div>
+                {/* 2. Search Bar */}
+                <div className="flex-1 px-4">
+                    <SearchDropdown />
                 </div>
 
                 {/* 3. Action Items */}
@@ -64,21 +50,16 @@ export const TopNavigation = () => {
                         <Home className="h-5.5 w-5.5" />
                     </Link>
 
-                    {/* Message with Orange Badge */}
-                    <button className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100">
+                    {/* Message — opens ChatOverlay */}
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent('open-chat'))}
+                        className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
+                    >
                         <MessageSquare className="h-5.5 w-5.5" />
-                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#F97316] text-[10px] font-bold text-white">
-                            2
-                        </span>
                     </button>
 
-                    {/* Notifications with Orange Badge */}
-                    <button className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100">
-                        <Bell className="h-5.5 w-5.5" />
-                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#F97316] text-[10px] font-bold text-white">
-                            3
-                        </span>
-                    </button>
+                    {/* Notifications */}
+                    <NotificationDropdown />
 
                     {/* Profile Dropdown */}
                     <DropdownMenu>

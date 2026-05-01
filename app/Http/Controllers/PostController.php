@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\User;
+use App\Notifications\CommentMentioned;
+use App\Notifications\PostLiked;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -16,13 +19,13 @@ class PostController extends Controller
         $validated = $request->validate([
             'content' => 'required_without:media|string|nullable',
             'media.*' => 'nullable|image|max:5120', // 5MB max per image
-            'type'    => 'required|in:text,media,share',
+            'type' => 'required|in:text,media,share',
             'original_post_id' => 'nullable|exists:posts,id',
         ]);
 
         $post = $request->user()->posts()->create([
             'content' => $validated['content'],
-            'type'    => $validated['type'],
+            'type' => $validated['type'],
             'original_post_id' => $validated['original_post_id'] ?? null,
         ]);
 
@@ -45,9 +48,13 @@ class PostController extends Controller
         $like = $post->likes()->where('user_id', auth()->id())->first();
 
         if ($like) {
-            $like->delete(); // Unlike
+            $like->delete();
         } else {
-            $post->likes()->create(['user_id' => auth()->id()]); // Like
+            $post->likes()->create(['user_id' => auth()->id()]);
+
+            if ($post->user_id !== auth()->id()) {
+                $post->user->notify(new PostLiked(auth()->user(), $post));
+            }
         }
 
         return back();
@@ -64,7 +71,14 @@ class PostController extends Controller
             'content' => $request->content,
         ]);
 
-        // return back() tells Inertia to seamlessly refresh the props (including the new comment)
+        preg_match_all('/@(\w+)/', $request->content, $matches);
+        foreach (array_unique($matches[1]) as $username) {
+            $mentioned = User::where('name', $username)->first();
+            if ($mentioned && $mentioned->id !== auth()->id()) {
+                $mentioned->notify(new CommentMentioned(auth()->user(), $post));
+            }
+        }
+
         return back();
     }
 }

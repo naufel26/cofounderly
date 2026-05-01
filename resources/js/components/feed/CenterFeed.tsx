@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { CreatePost } from './CreatePost';
 import { PostCard } from './PostCard';
 import { PostSkeleton } from './PostSkeleton';
+import { StatusBar } from './StatusBar';
 
 export const CenterFeed = () => {
     const { auth, posts } = usePage().props as any;
@@ -78,6 +79,7 @@ export const CenterFeed = () => {
 
     return (
         <div className="min-w-0 flex-1 space-y-4">
+            <StatusBar />
             <CreatePost user={user} />
             {/* Render Initial Skeletons OR the Feed */}
             {isLoadingInitial ? (

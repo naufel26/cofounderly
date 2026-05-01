@@ -107,7 +107,7 @@ export const CreatePost = ({ user }: { user: any }) => {
                                 clearErrors('content');
                             }}
                             placeholder="Share your startup idea, update, or ask for help..."
-                            className="w-full resize-none border-none bg-transparent p-0 text-[15px] leading-relaxed placeholder:text-slate-400 focus:ring-0"
+                            className="w-full resize-none border-none bg-transparent p-0 text-[15px] leading-relaxed outline-none placeholder:text-slate-400 focus:ring-0"
                             rows={3}
                         />
                         {errors.content && (

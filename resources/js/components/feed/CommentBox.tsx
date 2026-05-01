@@ -38,13 +38,7 @@ export const CommentBox = ({ post }: CommentBoxProps) => {
             {/* New Comment Input */}
             <form onSubmit={handleSubmit} className="mb-5 flex gap-3 px-1">
                 <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarImage
-                        src={
-                            currentUser?.avatar
-                                ? `/storage/${currentUser.avatar}`
-                                : undefined
-                        }
-                    />
+                    <AvatarImage src={currentUser?.profile_photo_url} />
                     <AvatarFallback className="bg-slate-200 text-slate-600">
                         {currentUser?.name?.charAt(0) || 'U'}
                     </AvatarFallback>
@@ -78,13 +72,7 @@ export const CommentBox = ({ post }: CommentBoxProps) => {
                     post.comments.map((comment: any) => (
                         <div key={comment.id} className="flex gap-3">
                             <Avatar className="mt-1 h-8 w-8 shrink-0">
-                                <AvatarImage
-                                    src={
-                                        comment.user?.avatar
-                                            ? `/storage/${comment.user.avatar}`
-                                            : undefined
-                                    }
-                                />
+                                <AvatarImage src={comment.user?.profile_photo_url} />
                                 <AvatarFallback className="bg-slate-200 text-slate-600">
                                     {comment.user?.name?.charAt(0) || 'U'}
                                 </AvatarFallback>

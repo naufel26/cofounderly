@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:56
+* @see app/Http/Controllers/PostController.php:63
 * @route '/posts/{post}/comments'
 */
 export const store = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:56
+* @see app/Http/Controllers/PostController.php:63
 * @route '/posts/{post}/comments'
 */
 store.url = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ store.url = (args: { post: number | { id: number } } | [post: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:56
+* @see app/Http/Controllers/PostController.php:63
 * @route '/posts/{post}/comments'
 */
 store.post = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.post = (args: { post: number | { id: number } } | [post: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:56
+* @see app/Http/Controllers/PostController.php:63
 * @route '/posts/{post}/comments'
 */
 const storeForm = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -69,7 +69,7 @@ const storeForm = (args: { post: number | { id: number } } | [post: number | { i
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:56
+* @see app/Http/Controllers/PostController.php:63
 * @route '/posts/{post}/comments'
 */
 storeForm.post = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import avatar from './avatar'
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +56,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -66,7 +66,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:15
+* @see app/Http/Controllers/ProfileController.php:18
 * @route '/profile'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,8 +82,113 @@ showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 show.form = showForm
 
 /**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+export const user = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: user.url(args, options),
+    method: 'get',
+})
+
+user.definition = {
+    methods: ["get","head"],
+    url: '/profile/{user}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+user.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { user: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { user: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            user: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        user: typeof args.user === 'object'
+        ? args.user.id
+        : args.user,
+    }
+
+    return user.definition.url
+            .replace('{user}', parsedArgs.user.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+user.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: user.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+user.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: user.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+const userForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: user.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+userForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: user.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::user
+* @see app/Http/Controllers/ProfileController.php:23
+* @route '/profile/{user}'
+*/
+userForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: user.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+user.form = userForm
+
+/**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:52
+* @see app/Http/Controllers/ProfileController.php:111
 * @route '/profile/update-profile'
 */
 export const updateProfile = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -98,7 +203,7 @@ updateProfile.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:52
+* @see app/Http/Controllers/ProfileController.php:111
 * @route '/profile/update-profile'
 */
 updateProfile.url = (options?: RouteQueryOptions) => {
@@ -107,7 +212,7 @@ updateProfile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:52
+* @see app/Http/Controllers/ProfileController.php:111
 * @route '/profile/update-profile'
 */
 updateProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -117,7 +222,7 @@ updateProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:52
+* @see app/Http/Controllers/ProfileController.php:111
 * @route '/profile/update-profile'
 */
 const updateProfileForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -127,7 +232,7 @@ const updateProfileForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:52
+* @see app/Http/Controllers/ProfileController.php:111
 * @route '/profile/update-profile'
 */
 updateProfileForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -352,6 +457,7 @@ destroy.form = destroyForm
 
 const profile = {
     show: Object.assign(show, show),
+    user: Object.assign(user, user),
     avatar: Object.assign(avatar, avatar),
     updateProfile: Object.assign(updateProfile, updateProfile),
     edit: Object.assign(edit, edit),

@@ -2,36 +2,95 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Connection;
 use App\Models\Post;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\User;
+use Inertia\Inertia;
 
 class FeedController extends Controller
 {
     public function index()
     {
-        // Later, you can fetch actual posts here
+        $userId = auth()->id();
+
         return Inertia::render('feeds', [
             'status' => session('status'),
-            // This is sent on the first visit
             'auth_user' => auth()->user(),
 
-            // This is only fetched when requested by the frontend
-            'posts' => Inertia::lazy(
-                fn() =>
-                Post::with([
+            'connection_stats' => [
+                'connected' => Connection::query()
+                    ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
+                    ->where('status', 'accepted')
+                    ->count(),
+                'pending_received' => Connection::query()
+                    ->where('receiver_id', $userId)
+                    ->where('status', 'pending')
+                    ->count(),
+                'pending_sent' => Connection::query()
+                    ->where('sender_id', $userId)
+                    ->where('status', 'pending')
+                    ->count(),
+            ],
+
+            'suggested_users' => User::query()
+                ->where('id', '!=', $userId)
+                ->withoutConnectionTo($userId)
+                ->select(['id', 'name', 'tagline', 'avatar', 'role'])
+                ->limit(5)
+                ->get()
+                ->map(fn (User $u) => array_merge($u->toArray(), [
+                    'profile_photo_url' => $u->profile_photo_url,
+                ])),
+
+            'posts' => Inertia::lazy(function () use ($userId) {
+                $posts = Post::with([
                     'user',
                     'media',
-                    'comments.user:id,name,profile_photo_url',
-                    'originalPost.user:id,name,profile_photo_url,tagline',
-                    'originalPost.media'
+                    'comments.user:id,name,avatar',
+                    'originalPost.user:id,name,avatar,tagline',
+                    'originalPost.media',
                 ])
                     ->withCount(['likes', 'comments'])
-                    ->withExists(['likes as is_liked' => fn($query) => $query->where('user_id', auth()->id())])
+                    ->withExists(['likes as is_liked' => fn ($q) => $q->where('user_id', $userId)])
+                    ->orderByRaw(
+                        "CASE WHEN EXISTS (
+                            SELECT 1 FROM connections
+                            WHERE status = 'accepted' AND (
+                                (sender_id = ? AND receiver_id = posts.user_id) OR
+                                (receiver_id = ? AND sender_id = posts.user_id)
+                            )
+                        ) THEN 0 ELSE 1 END",
+                        [$userId, $userId]
+                    )
                     ->latest()
-                    ->paginate(10)
-            ),
+                    ->paginate(10);
+
+                // Append connection_status to each post in a single extra query
+                $postUserIds = $posts->pluck('user_id')->unique()->filter()->values()->toArray();
+
+                $connectionMap = empty($postUserIds) ? collect() : Connection::query()
+                    ->where(fn ($q) => $q->where('sender_id', $userId)->whereIn('receiver_id', $postUserIds))
+                    ->orWhere(fn ($q) => $q->where('receiver_id', $userId)->whereIn('sender_id', $postUserIds))
+                    ->get()
+                    ->mapWithKeys(function (Connection $conn) use ($userId) {
+                        $otherId = $conn->sender_id === $userId ? $conn->receiver_id : $conn->sender_id;
+                        $status = $conn->status === 'pending'
+                            ? ($conn->sender_id === $userId ? 'sent_pending' : 'received_pending')
+                            : $conn->status;
+
+                        return [$otherId => $status];
+                    });
+
+                $posts->getCollection()->transform(function (Post $post) use ($connectionMap, $userId) {
+                    $post->connection_status = $post->user_id === $userId
+                        ? 'self'
+                        : $connectionMap->get($post->user_id);
+
+                    return $post;
+                });
+
+                return $posts;
+            }),
         ]);
     }
 }

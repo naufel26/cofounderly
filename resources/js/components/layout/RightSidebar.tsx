@@ -1,8 +1,22 @@
 import { Sparkles, ExternalLink, TrendingUp, ArrowRight } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ConnectButton } from '@/components/feed/ConnectButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
-export const RightSidebar = () => {
+interface SuggestedUser {
+    id: number;
+    name: string;
+    tagline: string | null;
+    role: string | null;
+    profile_photo_url: string;
+}
+
+interface RightSidebarProps {
+    suggestedUsers?: SuggestedUser[];
+}
+
+export const RightSidebar = ({ suggestedUsers = [] }: RightSidebarProps) => {
     return (
         <aside className="sticky top-20 h-fit w-80 shrink-0 space-y-4">
             {/* 1. Go Premium Card */}
@@ -26,7 +40,53 @@ export const RightSidebar = () => {
                 </Button>
             </div>
 
-            {/* 2. Sponsored Advisor Card */}
+            {/* 2. Suggested for You */}
+            {suggestedUsers.length > 0 && (
+                <div className="card-elevated p-4">
+                    <h4 className="text-muted-foreground/70 mb-4 px-1 text-[10px] font-bold uppercase tracking-widest">
+                        Suggested for You
+                    </h4>
+
+                    <div className="space-y-4">
+                        {suggestedUsers.map((user) => (
+                            <div
+                                key={user.id}
+                                className="flex items-center justify-between gap-3"
+                            >
+                                <Link
+                                    href={`/profile/${user.id}`}
+                                    className="flex min-w-0 items-center gap-3"
+                                >
+                                    <Avatar className="h-10 w-10 shrink-0 rounded-full transition-opacity hover:opacity-90">
+                                        <AvatarImage
+                                            src={user.profile_photo_url}
+                                        />
+                                        <AvatarFallback className="bg-slate-100 text-slate-600 text-xs">
+                                            {user.name?.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0">
+                                        <p className="text-foreground truncate text-sm font-bold hover:underline">
+                                            {user.name}
+                                        </p>
+                                        <p className="text-muted-foreground truncate text-[11px]">
+                                            {user.tagline ||
+                                                user.role ||
+                                                'Founder'}
+                                        </p>
+                                    </div>
+                                </Link>
+                                <ConnectButton
+                                    userId={user.id}
+                                    connectionStatus={null}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* 3. Sponsored Advisor Card */}
             <div className="card-elevated p-4">
                 <div className="mb-4 flex items-center justify-between">
                     <span className="text-muted-foreground/70 text-[10px] font-bold uppercase tracking-widest">
@@ -62,7 +122,7 @@ export const RightSidebar = () => {
                 </Button>
             </div>
 
-            {/* 3. Trending Startups */}
+            {/* 4. Trending Startups */}
             <div className="card-elevated p-4">
                 <div className="mb-4 flex items-center gap-2 px-1">
                     <TrendingUp className="h-4 w-4 text-teal-500" />
@@ -113,7 +173,7 @@ export const RightSidebar = () => {
                 </button>
             </div>
 
-            {/* 4. Footer Links Ad Card */}
+            {/* 5. Footer Links Ad Card */}
             <div className="rounded-2xl border border-teal-100/50 bg-gradient-to-br from-teal-50 to-teal-100/30 p-8 text-center">
                 <h5 className="mb-1 font-bold text-teal-800">Your Ad Here</h5>
                 <p className="text-xs text-teal-600/80">Reach 50K+ founders</p>

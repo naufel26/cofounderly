@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import comments from './comments'
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:14
+* @see app/Http/Controllers/PostController.php:17
 * @route '/posts'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:14
+* @see app/Http/Controllers/PostController.php:17
 * @route '/posts'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:14
+* @see app/Http/Controllers/PostController.php:17
 * @route '/posts'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -36,7 +36,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:14
+* @see app/Http/Controllers/PostController.php:17
 * @route '/posts'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -46,7 +46,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\PostController::store
-* @see app/Http/Controllers/PostController.php:14
+* @see app/Http/Controllers/PostController.php:17
 * @route '/posts'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -58,7 +58,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\PostController::like
-* @see app/Http/Controllers/PostController.php:43
+* @see app/Http/Controllers/PostController.php:46
 * @route '/posts/{post}/like'
 */
 export const like = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -73,7 +73,7 @@ like.definition = {
 
 /**
 * @see \App\Http\Controllers\PostController::like
-* @see app/Http/Controllers/PostController.php:43
+* @see app/Http/Controllers/PostController.php:46
 * @route '/posts/{post}/like'
 */
 like.url = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ like.url = (args: { post: number | { id: number } } | [post: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PostController::like
-* @see app/Http/Controllers/PostController.php:43
+* @see app/Http/Controllers/PostController.php:46
 * @route '/posts/{post}/like'
 */
 like.post = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ like.post = (args: { post: number | { id: number } } | [post: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PostController::like
-* @see app/Http/Controllers/PostController.php:43
+* @see app/Http/Controllers/PostController.php:46
 * @route '/posts/{post}/like'
 */
 const likeForm = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const likeForm = (args: { post: number | { id: number } } | [post: number | { id
 
 /**
 * @see \App\Http\Controllers\PostController::like
-* @see app/Http/Controllers/PostController.php:43
+* @see app/Http/Controllers/PostController.php:46
 * @route '/posts/{post}/like'
 */
 likeForm.post = (args: { post: number | { id: number } } | [post: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
