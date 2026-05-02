@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->enum('status', ['pending', 'accepted', 'blocked'])->default('pending');
+            $table->enum('status', ['pending', 'accepted', 'blocked', 'ignored'])->default('pending');
             $table->timestamps();
 
             $table->unique(['sender_id', 'receiver_id']);

@@ -1,8 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import avatar from './avatar'
+import cover from './cover'
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +18,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -26,7 +27,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +37,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +47,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +57,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -66,7 +67,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:18
+* @see app/Http/Controllers/ProfileController.php:20
 * @route '/profile'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,8 +83,89 @@ showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 show.form = showForm
 
 /**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+export const viewers = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: viewers.url(options),
+    method: 'get',
+})
+
+viewers.definition = {
+    methods: ["get","head"],
+    url: '/profile/viewers',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+viewers.url = (options?: RouteQueryOptions) => {
+    return viewers.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+viewers.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: viewers.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+viewers.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: viewers.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+const viewersForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: viewers.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+viewersForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: viewers.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::viewers
+* @see app/Http/Controllers/ProfileController.php:39
+* @route '/profile/viewers'
+*/
+viewersForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: viewers.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+viewers.form = viewersForm
+
+/**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 export const user = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,7 +180,7 @@ user.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 user.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -131,7 +213,7 @@ user.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 user.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -141,7 +223,7 @@ user.get = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 user.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -151,7 +233,7 @@ user.head = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 const userForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -161,7 +243,7 @@ const userForm = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 userForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +253,7 @@ userForm.get = (args: { user: number | { id: number } } | [user: number | { id: 
 
 /**
 * @see \App\Http\Controllers\ProfileController::user
-* @see app/Http/Controllers/ProfileController.php:23
+* @see app/Http/Controllers/ProfileController.php:25
 * @route '/profile/{user}'
 */
 userForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -188,7 +270,7 @@ user.form = userForm
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:111
+* @see app/Http/Controllers/ProfileController.php:186
 * @route '/profile/update-profile'
 */
 export const updateProfile = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -203,7 +285,7 @@ updateProfile.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:111
+* @see app/Http/Controllers/ProfileController.php:186
 * @route '/profile/update-profile'
 */
 updateProfile.url = (options?: RouteQueryOptions) => {
@@ -212,7 +294,7 @@ updateProfile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:111
+* @see app/Http/Controllers/ProfileController.php:186
 * @route '/profile/update-profile'
 */
 updateProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -222,7 +304,7 @@ updateProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:111
+* @see app/Http/Controllers/ProfileController.php:186
 * @route '/profile/update-profile'
 */
 const updateProfileForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -232,7 +314,7 @@ const updateProfileForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\ProfileController::updateProfile
-* @see app/Http/Controllers/ProfileController.php:111
+* @see app/Http/Controllers/ProfileController.php:186
 * @route '/profile/update-profile'
 */
 updateProfileForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -456,9 +538,11 @@ destroyForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> 
 destroy.form = destroyForm
 
 const profile = {
-    show: Object.assign(show, show),
-    user: Object.assign(user, user),
     avatar: Object.assign(avatar, avatar),
+    cover: Object.assign(cover, cover),
+    show: Object.assign(show, show),
+    viewers: Object.assign(viewers, viewers),
+    user: Object.assign(user, user),
     updateProfile: Object.assign(updateProfile, updateProfile),
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),

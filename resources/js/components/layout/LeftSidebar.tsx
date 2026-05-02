@@ -16,6 +16,7 @@ interface SidebarLinkProps {
     icon: React.ReactNode;
     label: string;
     count?: number;
+    href: string;
 }
 
 interface ConnectionStats {
@@ -24,8 +25,8 @@ interface ConnectionStats {
     pending_sent: number;
 }
 
-const SidebarLink = ({ icon, label, count }: SidebarLinkProps) => (
-    <button className="sidebar-link group w-full">
+const SidebarLink = ({ icon, label, count, href }: SidebarLinkProps) => (
+    <Link href={href} className="sidebar-link group w-full">
         <span className="flex items-center gap-3">
             <span className="text-muted-foreground group-hover:text-primary transition-colors">
                 {icon}
@@ -37,11 +38,11 @@ const SidebarLink = ({ icon, label, count }: SidebarLinkProps) => (
                 {count}
             </span>
         )}
-    </button>
+    </Link>
 );
 
 export const LeftSidebar = () => {
-    const { auth, connection_stats } = usePage().props as { auth: { user: any }; connection_stats?: ConnectionStats };
+    const { auth, connection_stats, profile_views_count } = usePage().props as { auth: { user: any }; connection_stats?: ConnectionStats; profile_views_count?: number };
     const user = auth?.user;
     const stats: ConnectionStats = connection_stats ?? { connected: 0, pending_received: 0, pending_sent: 0 };
 
@@ -71,26 +72,32 @@ export const LeftSidebar = () => {
                     </p>
 
                     <div className="border-border mt-4 space-y-3 border-t pt-4">
-                        <button className="group flex w-full items-center justify-between">
+                        <Link
+                            href="/profile/viewers"
+                            className="group flex w-full items-center justify-between"
+                        >
                             <div className="flex items-center gap-3">
                                 <Eye className="text-muted-foreground group-hover:text-primary h-4 w-4" />
-                                <span className="text-muted-foreground text-left text-xs">
+                                <span className="text-muted-foreground group-hover:text-primary text-left text-xs transition-colors">
                                     Who viewed my profile
                                 </span>
                             </div>
                             <span className="text-primary text-xs font-bold">
-                                24
+                                {profile_views_count ?? 0}
                             </span>
-                        </button>
+                        </Link>
 
-                        <div className="flex w-full items-center justify-between">
-                            <span className="text-muted-foreground text-xs">
+                        <Link
+                            href="/connections"
+                            className="group flex w-full items-center justify-between"
+                        >
+                            <span className="text-muted-foreground group-hover:text-primary text-xs transition-colors">
                                 Connections
                             </span>
                             <span className="text-primary text-xs font-bold">
                                 {stats.connected}
                             </span>
-                        </div>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -102,21 +109,24 @@ export const LeftSidebar = () => {
                 </h4>
                 <div className="space-y-0.5">
                     <SidebarLink
+                        href="/connections?tab=connected"
                         icon={<Users className="h-4 w-4" />}
                         label="Connected"
                         count={stats.connected}
                     />
                     <SidebarLink
+                        href="/connections?tab=pending"
                         icon={<Clock className="h-4 w-4" />}
                         label="Pending"
                         count={stats.pending_received}
                     />
                     <SidebarLink
+                        href="/connections?tab=ignored"
                         icon={<UserX className="h-4 w-4" />}
                         label="Ignored"
-                        count={0}
                     />
                     <SidebarLink
+                        href="/connections?tab=sent"
                         icon={<Send className="h-4 w-4" />}
                         label="Sent"
                         count={stats.pending_sent}
@@ -131,20 +141,24 @@ export const LeftSidebar = () => {
                 </h4>
                 <div className="space-y-0.5">
                     <SidebarLink
+                        href="#"
                         icon={<Calendar className="h-4 w-4" />}
                         label="Manage meetings"
                         count={2}
                     />
                     <SidebarLink
+                        href="#"
                         icon={<Search className="h-4 w-4" />}
                         label="Find an advisor"
                     />
                     <SidebarLink
+                        href="#"
                         icon={<UsersRound className="h-4 w-4" />}
                         label="Your team"
                         count={4}
                     />
                     <SidebarLink
+                        href="#"
                         icon={<UserPlus className="h-4 w-4" />}
                         label="Requested teams"
                         count={3}

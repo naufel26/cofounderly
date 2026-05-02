@@ -20,7 +20,7 @@ export function CTA() {
                     </p>
                     <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                         <Button variant="hero-outline" size="xl" asChild>
-                            <Link to="/signup" className="group">
+                            <Link href="/signup" className="group">
                                 Create Free Account
                                 <ArrowRight className="transition-transform group-hover:translate-x-1" />
                             </Link>

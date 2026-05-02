@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Connection;
 use App\Models\Post;
+use App\Models\ProfileView;
+use App\Models\Status;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,19 +24,74 @@ class ProfileController extends Controller
 
     public function showUser(User $user, Request $request): Response
     {
-        return $this->renderProfile($user, $request->user()->id);
+        $authId = $request->user()->id;
+
+        if ($user->id !== $authId) {
+            ProfileView::updateOrCreate(
+                ['viewer_id' => $authId, 'profile_user_id' => $user->id],
+                ['viewed_at' => now()],
+            );
+        }
+
+        return $this->renderProfile($user, $authId);
+    }
+
+    public function viewers(Request $request): Response
+    {
+        $user = $request->user();
+
+        $viewers = ProfileView::where('profile_user_id', $user->id)
+            ->with('viewer:id,name,avatar,tagline,role')
+            ->orderByDesc('viewed_at')
+            ->paginate(20);
+
+        $viewers->getCollection()->transform(function (ProfileView $view) {
+            return [
+                'viewer' => array_merge($view->viewer->toArray(), [
+                    'profile_photo_url' => $view->viewer->profile_photo_url,
+                ]),
+                'viewed_at' => $view->viewed_at->toISOString(),
+            ];
+        });
+
+        return Inertia::render('profile/viewers', [
+            'viewers' => $viewers,
+            'total' => ProfileView::where('profile_user_id', $user->id)->count(),
+        ]);
     }
 
     private function renderProfile(User $profileUser, int $authId): Response
     {
         $connectionStatus = $this->connectionStatusFor($profileUser->id, $authId);
 
+        $activeStatus = Status::active()
+            ->where('user_id', $profileUser->id)
+            ->with('user:id,name,avatar')
+            ->latest()
+            ->first();
+
         return Inertia::render('profile/show', [
             'profile_user' => array_merge($profileUser->toArray(), [
                 'profile_photo_url' => $profileUser->profile_photo_url,
+                'cover_photo_url' => $profileUser->cover_photo_url,
             ]),
             'is_own_profile' => $profileUser->id === $authId,
             'connection_status' => $connectionStatus,
+            'active_status' => $activeStatus ? [
+                'id' => $activeStatus->id,
+                'content' => $activeStatus->content,
+                'media_url' => $activeStatus->media_path
+                    ? Storage::disk('public')->url($activeStatus->media_path)
+                    : null,
+                'expires_at' => $activeStatus->expires_at->toISOString(),
+                'created_at' => $activeStatus->created_at->toISOString(),
+                'user' => [
+                    'id' => $profileUser->id,
+                    'name' => $profileUser->name,
+                    'profile_photo_url' => $profileUser->profile_photo_url,
+                ],
+                'is_own' => $profileUser->id === $authId,
+            ] : null,
             'connection_stats' => [
                 'connected' => Connection::query()
                     ->where(fn ($q) => $q->where('sender_id', $profileUser->id)->orWhere('receiver_id', $profileUser->id))
@@ -86,6 +143,24 @@ class ProfileController extends Controller
         }
 
         return $conn->sender_id === $authId ? 'sent_pending' : 'received_pending';
+    }
+
+    public function updateCoverPhoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'cover_photo' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
+        ]);
+
+        $user = $request->user();
+
+        if ($user->cover_photo) {
+            Storage::disk('public')->delete($user->cover_photo);
+        }
+
+        $path = $request->file('cover_photo')->store('covers', 'public');
+        $user->update(['cover_photo' => $path]);
+
+        return back();
     }
 
     public function updateAvatar(Request $request): RedirectResponse

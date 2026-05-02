@@ -48,7 +48,7 @@ export function Footer() {
                         <ul className="space-y-3 text-sm">
                             <li>
                                 <Link
-                                    to="/signup"
+                                    href="/signup"
                                     className="text-background/60 transition-colors hover:text-background"
                                 >
                                     Get Started

@@ -4,49 +4,45 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Spatie\Permission\Models\Role;
 
 class UserRegisterController extends Controller
 {
-    //
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        // 1. Validation
         $request->validate([
-            'fullName'   => 'required|string|max:255',
-            'email'      => 'required|string|email|max:255|unique:' . User::class,
-            'password'   => ['required', 'string', Rules\Password::defaults()],
-            'role'       => 'required|string',
+            'fullName' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:'.User::class,
+            'password' => ['required', 'string', Rules\Password::defaults()],
+            'role' => 'required|string|in:founder,cofounder,investor,jobseeker,student,advisor',
             'lookingFor' => 'required|array',
-            'stage'      => 'required|string',
-            'interests'  => 'required|array',
-            'tagline'    => 'nullable|string|max:255',
+            'stage' => 'required|string',
+            'interests' => 'required|array',
+            'tagline' => 'nullable|string|max:255',
         ]);
 
-        // 2. Create User with extended fields
         $user = User::create([
-            'name'        => $request->fullName,
-            'email'       => $request->email,
-            'password'    => Hash::make($request->password),
-            'tagline'     => $request->tagline,
-            'role'        => $request->role,
-            'looking_for' => $request->lookingFor, // Casted to array automatically
-            'stage'       => $request->stage,
-            'interests'   => $request->interests,  // Casted to array automatically
+            'name' => $request->fullName,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'tagline' => $request->tagline,
+            'role' => $request->role,
+            'looking_for' => $request->lookingFor,
+            'stage' => $request->stage,
+            'interests' => $request->interests,
         ]);
 
-        // 3. SPATIE: Assign the role
-        // This allows you to use $user->hasRole('founder') later
+        // Ensure the Spatie role exists before assigning it
+        Role::firstOrCreate(['name' => $request->role, 'guard_name' => 'web']);
         $user->assignRole($request->role);
 
-        // 3. Log them in
         Auth::login($user);
 
-        // 4. Redirect (Inertia will take them to the dashboard)
-        // return redirect()->intended(route('dashboard', absolute: false));
-        return redirect()->route('feeds');
+        return redirect()->route('onboarding');
     }
 }

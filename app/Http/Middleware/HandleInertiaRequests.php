@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ProfileView;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +43,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'profile_views_count' => function () use ($request) {
+                if (! $request->user()) {
+                    return 0;
+                }
+
+                return ProfileView::where('profile_user_id', $request->user()->id)->count();
+            },
             'notifications' => function () use ($request) {
                 if (! $request->user()) {
                     return ['unread_count' => 0, 'recent' => []];

@@ -7,6 +7,8 @@ import {
     Globe,
     Link2,
     MapPin,
+    Plus,
+    Trash2,
     UploadCloud,
     Users,
 } from 'lucide-react';
@@ -15,10 +17,13 @@ import { toast } from 'sonner';
 import { ChatOverlay } from '@/components/chat/ChatOverlay';
 import { MessageButton } from '@/components/chat/MessageButton';
 import { ConnectButton, type ConnectionStatus } from '@/components/feed/ConnectButton';
+import { CreateStatusModal } from '@/components/feed/CreateStatusModal';
 import { PostCard } from '@/components/feed/PostCard';
 import { PostSkeleton } from '@/components/feed/PostSkeleton';
+import { StatusViewer, type StatusItem } from '@/components/feed/StatusViewer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { csrfToken } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
 
 type Tab = 'posts' | 'experience' | 'about';
@@ -34,13 +39,18 @@ interface ExperienceEntry {
 }
 
 export default function Show() {
-    const { auth, profile_user, is_own_profile, connection_status, connection_stats, posts } =
+    const { auth, profile_user, is_own_profile, connection_status, connection_stats, posts, active_status } =
         usePage().props as any;
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isCoverUploading, setIsCoverUploading] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<Tab>('posts');
+    const [statusCreateOpen, setStatusCreateOpen] = useState(false);
+    const [statusViewerOpen, setStatusViewerOpen] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState<StatusItem | null>(active_status ?? null);
 
     // --- Posts lazy-load state ---
     const [allPosts, setAllPosts] = useState<any[]>([]);
@@ -92,6 +102,43 @@ export default function Show() {
         return () => observer.disconnect();
     }, [posts?.next_page_url, isLoadingMore, isLoadingPosts]);
 
+    const handleStatusCreated = (status: StatusItem) => setCurrentStatus(status);
+
+    const handleDeleteStatus = async () => {
+        if (!currentStatus) return;
+        await fetch(`/statuses/${currentStatus.id}`, {
+            method: 'DELETE',
+            headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
+        });
+        setCurrentStatus(null);
+        setStatusViewerOpen(false);
+    };
+
+    const handleAvatarClick = () => {
+        if (!is_own_profile && currentStatus) {
+            setStatusViewerOpen(true);
+        }
+    };
+
+    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsCoverUploading(true);
+        const formData = new FormData();
+        formData.append('cover_photo', file);
+
+        router.post('/profile/cover-photo', formData, {
+            forceFormData: true,
+            onSuccess: () => toast.success('Cover photo updated!'),
+            onError: (errors) => toast.error(errors.cover_photo || 'Upload failed'),
+            onFinish: () => {
+                setIsCoverUploading(false);
+                if (coverInputRef.current) coverInputRef.current.value = '';
+            },
+        });
+    };
+
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -120,7 +167,18 @@ export default function Show() {
     return (
         <>
         <div className="min-h-screen bg-slate-50 pb-20">
-            <Head title={`${profile_user?.name} | Cofounderly`} />
+            <Head>
+            <title>{profile_user?.name} — {profile_user?.tagline ?? profile_user?.role ?? 'Member'} | Cofounderly</title>
+            <meta name="description" content={profile_user?.bio ?? profile_user?.tagline ?? `${profile_user?.name} is on Cofounderly — Bangladesh's startup community.`} />
+            <meta property="og:type" content="profile" />
+            <meta property="og:title" content={`${profile_user?.name} | Cofounderly`} />
+            <meta property="og:description" content={profile_user?.bio ?? profile_user?.tagline ?? `${profile_user?.name} is building on Cofounderly.`} />
+            <meta property="og:image" content={profile_user?.profile_photo_url} />
+            <meta name="twitter:card" content="summary" />
+            <meta name="twitter:title" content={`${profile_user?.name} | Cofounderly`} />
+            <meta name="twitter:description" content={profile_user?.bio ?? profile_user?.tagline ?? ''} />
+            <meta name="twitter:image" content={profile_user?.profile_photo_url} />
+        </Head>
 
             {/* Sub-header */}
             <div className="sticky top-0 z-40 border-b border-slate-100 bg-white shadow-sm">
@@ -136,13 +194,30 @@ export default function Show() {
                         {is_own_profile ? 'My Profile' : profile_user?.name}
                     </h1>
                     {is_own_profile ? (
-                        <Button
-                            onClick={() => setIsEditOpen(true)}
-                            className="h-9 gap-2 rounded-xl bg-[#2DAB94] px-4 text-sm font-bold text-white hover:bg-[#248d7a]"
-                        >
-                            <Edit2 className="h-4 w-4" />
-                            Edit Profile
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => currentStatus ? setStatusViewerOpen(true) : setStatusCreateOpen(true)}
+                                className={`flex h-9 items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-colors ${
+                                    currentStatus
+                                        ? 'bg-gradient-to-r from-[#2DAB94] to-teal-400 text-white'
+                                        : 'border border-slate-200 text-slate-600 hover:border-[#2DAB94] hover:text-[#2DAB94]'
+                                }`}
+                            >
+                                {currentStatus ? (
+                                    <span className="size-2 rounded-full bg-white/70" />
+                                ) : (
+                                    <Plus className="size-3.5" />
+                                )}
+                                {currentStatus ? 'My Status' : 'Add Status'}
+                            </button>
+                            <Button
+                                onClick={() => setIsEditOpen(true)}
+                                className="h-9 gap-2 rounded-xl bg-[#2DAB94] px-4 text-sm font-bold text-white hover:bg-[#248d7a]"
+                            >
+                                <Edit2 className="h-4 w-4" />
+                                Edit Profile
+                            </Button>
+                        </div>
                     ) : (
                         <div className="flex items-center gap-2">
                             <MessageButton
@@ -170,19 +245,68 @@ export default function Show() {
             <div className="mx-auto mt-6 max-w-4xl space-y-4 px-4">
                 {/* Profile Header Card */}
                 <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-                    <div className="h-36 bg-gradient-to-r from-[#2DAB94] to-[#F1B981]" />
+                    {/* Cover photo */}
+                    <div className="group relative h-44">
+                        {profile_user?.cover_photo_url ? (
+                            <img
+                                src={profile_user.cover_photo_url}
+                                alt="Cover"
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className="h-full w-full bg-gradient-to-r from-[#2DAB94] to-[#F1B981]" />
+                        )}
+
+                        {is_own_profile && (
+                            <>
+                                <button
+                                    onClick={() => coverInputRef.current?.click()}
+                                    className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 text-sm font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+                                >
+                                    {isCoverUploading ? (
+                                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white" />
+                                    ) : (
+                                        <>
+                                            <UploadCloud className="h-5 w-5" />
+                                            {profile_user?.cover_photo_url ? 'Change Cover Photo' : 'Add Cover Photo'}
+                                        </>
+                                    )}
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={coverInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleCoverChange}
+                                />
+                            </>
+                        )}
+                    </div>
                     <div className="-mt-16 px-8 pb-6">
                         <div className="flex items-end justify-between">
                             <div className="group relative">
-                                <Avatar className="h-28 w-28 border-4 border-white shadow-md">
-                                    <AvatarImage
-                                        src={profile_user?.profile_photo_url}
-                                        className="object-cover"
-                                    />
-                                    <AvatarFallback className="bg-slate-200 text-4xl font-bold text-slate-600">
-                                        {profile_user?.name?.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
+                                {/* Status ring — gradient if has status */}
+                                <div
+                                    className={`inline-flex rounded-full p-[3px] ${
+                                        currentStatus
+                                            ? 'bg-gradient-to-tr from-[#2DAB94] via-teal-400 to-[#F1B981]'
+                                            : 'bg-transparent'
+                                    }`}
+                                    onClick={handleAvatarClick}
+                                    style={{ cursor: !is_own_profile && currentStatus ? 'pointer' : 'default' }}
+                                >
+                                    <div className="rounded-full bg-white p-[3px]">
+                                        <Avatar className="h-24 w-24 shadow-md">
+                                            <AvatarImage
+                                                src={profile_user?.profile_photo_url}
+                                                className="object-cover"
+                                            />
+                                            <AvatarFallback className="bg-slate-200 text-4xl font-bold text-slate-600">
+                                                {profile_user?.name?.substring(0, 2).toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </div>
+                                </div>
 
                                 {is_own_profile && (
                                     <>
@@ -450,6 +574,33 @@ export default function Show() {
                 </div>
             </div>
         </div>
+
+        {statusCreateOpen && (
+            <CreateStatusModal
+                onClose={() => setStatusCreateOpen(false)}
+                onCreated={(s) => { handleStatusCreated(s); setStatusCreateOpen(false); }}
+            />
+        )}
+
+        {statusViewerOpen && currentStatus && (
+            <StatusViewer
+                statuses={[currentStatus]}
+                startIndex={0}
+                onClose={() => setStatusViewerOpen(false)}
+                onViewed={() => {}}
+                extraActions={
+                    is_own_profile ? (
+                        <button
+                            onClick={handleDeleteStatus}
+                            className="flex items-center gap-1.5 rounded-xl bg-red-500/80 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-500"
+                        >
+                            <Trash2 className="size-3.5" />
+                            Delete Status
+                        </button>
+                    ) : undefined
+                }
+            />
+        )}
 
         <ChatOverlay />
         </>

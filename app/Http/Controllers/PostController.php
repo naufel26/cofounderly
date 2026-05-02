@@ -2,15 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Connection;
 use App\Models\Post;
 use App\Models\User;
 use App\Notifications\CommentMentioned;
 use App\Notifications\PostLiked;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PostController extends Controller
 {
-    //
+    public function show(Post $post): Response
+    {
+        $userId = auth()->id();
+
+        $post->load([
+            'user',
+            'media',
+            'comments' => fn ($q) => $q->with('user:id,name,avatar')->latest(),
+            'originalPost.user:id,name,avatar,tagline',
+            'originalPost.media',
+        ]);
+
+        $post->loadCount(['likes', 'comments']);
+        $post->loadExists(['likes as is_liked' => fn ($q) => $q->where('user_id', $userId)]);
+
+        $conn = Connection::query()
+            ->where(fn ($q) => $q->where('sender_id', $userId)->where('receiver_id', $post->user_id))
+            ->orWhere(fn ($q) => $q->where('sender_id', $post->user_id)->where('receiver_id', $userId))
+            ->first();
+
+        $post->connection_status = $post->user_id === $userId
+            ? 'self'
+            : ($conn
+                ? ($conn->status === 'accepted' ? 'accepted' : ($conn->sender_id === $userId ? 'sent_pending' : 'received_pending'))
+                : null);
+
+        return Inertia::render('posts/show', [
+            'post' => $post,
+            'post_url' => url('/posts/'.$post->id),
+        ]);
+    }
+
     /**
      * Store a newly created post.
      */

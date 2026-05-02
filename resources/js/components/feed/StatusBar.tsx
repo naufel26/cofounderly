@@ -79,7 +79,7 @@ export function StatusBar() {
         );
     }
 
-    if (!ownStatus && others.length === 0) return null;
+    // Always render so the "Add Status" bubble is visible even with no statuses
 
     return (
         <>

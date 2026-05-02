@@ -52,16 +52,6 @@ class FeedController extends Controller
                 ])
                     ->withCount(['likes', 'comments'])
                     ->withExists(['likes as is_liked' => fn ($q) => $q->where('user_id', $userId)])
-                    ->orderByRaw(
-                        "CASE WHEN EXISTS (
-                            SELECT 1 FROM connections
-                            WHERE status = 'accepted' AND (
-                                (sender_id = ? AND receiver_id = posts.user_id) OR
-                                (receiver_id = ? AND sender_id = posts.user_id)
-                            )
-                        ) THEN 0 ELSE 1 END",
-                        [$userId, $userId]
-                    )
                     ->latest()
                     ->paginate(10);
 

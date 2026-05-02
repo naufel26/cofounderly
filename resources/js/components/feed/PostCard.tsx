@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CommentBox } from './CommentBox';
 import { ConnectButton } from './ConnectButton';
+import { ShareModal } from './ShareModal';
 
 dayjs.extend(relativeTime);
 
@@ -33,6 +34,9 @@ export const PostCard = ({ post }: PostCardProps) => {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
     const [showComments, setShowComments] = useState(false);
+    const [showShare, setShowShare] = useState(false);
+
+    const postUrl = `${window.location.origin}/posts/${post.id}`;
 
     const handleLike = () => {
         // 1. Instantly update the UI (Optimistic Update)
@@ -125,9 +129,12 @@ export const PostCard = ({ post }: PostCardProps) => {
                                     {post.user?.name}
                                 </Link>
                             </div>
-                            <p className="mt-1 text-[11px] text-slate-400">
+                            <Link
+                                href={`/posts/${post.id}`}
+                                className="mt-1 block text-[11px] text-slate-400 hover:underline"
+                            >
                                 {dayjs(post.created_at).fromNow()}
-                            </p>
+                            </Link>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -192,9 +199,22 @@ export const PostCard = ({ post }: PostCardProps) => {
                         />
                         Comment
                     </button>
-                    <button className="flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#2DAB94]">
-                        <Share2 className="h-4.5 w-4.5" /> Share
-                    </button>
+                    <div className="relative flex flex-1">
+                        <button
+                            onClick={() => setShowShare((v) => !v)}
+                            className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-colors hover:bg-slate-50 ${showShare ? 'bg-teal-50/50 text-[#2DAB94]' : 'text-slate-600 hover:text-[#2DAB94]'}`}
+                        >
+                            <Share2 className="h-4.5 w-4.5" /> Share
+                        </button>
+                        {showShare && (
+                            <ShareModal
+                                postId={post.id}
+                                postUrl={postUrl}
+                                postContent={post.content}
+                                onClose={() => setShowShare(false)}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Comment section sits below the action row */}

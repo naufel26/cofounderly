@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:166
-* @route '/profile/avatar'
+* @see app/Http/Controllers/ProfileController.php:148
+* @route '/profile/cover-photo'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: update.url(options),
@@ -11,13 +11,13 @@ export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 
 update.definition = {
     methods: ["post"],
-    url: '/profile/avatar',
+    url: '/profile/cover-photo',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:166
-* @route '/profile/avatar'
+* @see app/Http/Controllers/ProfileController.php:148
+* @route '/profile/cover-photo'
 */
 update.url = (options?: RouteQueryOptions) => {
     return update.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:166
-* @route '/profile/avatar'
+* @see app/Http/Controllers/ProfileController.php:148
+* @route '/profile/cover-photo'
 */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: update.url(options),
@@ -35,8 +35,8 @@ update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:166
-* @route '/profile/avatar'
+* @see app/Http/Controllers/ProfileController.php:148
+* @route '/profile/cover-photo'
 */
 const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(options),
@@ -45,8 +45,8 @@ const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:166
-* @route '/profile/avatar'
+* @see app/Http/Controllers/ProfileController.php:148
+* @route '/profile/cover-photo'
 */
 updateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(options),
@@ -55,8 +55,8 @@ updateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 update.form = updateForm
 
-const avatar = {
+const cover = {
     update: Object.assign(update, update),
 }
 
-export default avatar
+export default cover

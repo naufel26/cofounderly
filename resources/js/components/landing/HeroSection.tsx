@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowRight, Users, Rocket, TrendingUp } from 'lucide-react';
+import { ArrowRight, Rocket, TrendingUp, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function HeroSection() {
@@ -54,13 +54,13 @@ export function HeroSection() {
                         style={{ animationDelay: '0.3s' }}
                     >
                         <Button variant="hero" size="xl" asChild>
-                            <Link to="/signup" className="group">
+                            <Link href="/signup" className="group">
                                 Start Your Journey
                                 <ArrowRight className="transition-transform group-hover:translate-x-1" />
                             </Link>
                         </Button>
                         <Button variant="outline" size="xl" asChild>
-                            <Link to="#how-it-works">See How It Works</Link>
+                            <a href="#how-it-works">See How It Works</a>
                         </Button>
                     </div>
 

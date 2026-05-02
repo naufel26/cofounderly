@@ -182,11 +182,11 @@ export default function SignUp() {
                 {/* Left Panel - Form */}
                 <div className="flex flex-1 flex-col p-6 sm:p-8 lg:p-12">
                     <div className="mb-8 flex items-center justify-between">
-                        <Link to="/">
+                        <Link href="/">
                             <Logo size="md" />
                         </Link>
                         <Link
-                            to="/signin"
+                            href="/login"
                             className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                         >
                             Already have an account?{' '}

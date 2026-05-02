@@ -16,6 +16,7 @@ type Props = {
     startIndex: number;
     onClose: () => void;
     onViewed: (id: number) => void;
+    extraActions?: React.ReactNode;
 };
 
 function timeAgo(iso: string): string {
@@ -28,7 +29,7 @@ function timeAgo(iso: string): string {
 
 const DURATION = 5000;
 
-export function StatusViewer({ statuses, startIndex, onClose, onViewed }: Props) {
+export function StatusViewer({ statuses, startIndex, onClose, onViewed, extraActions }: Props) {
     const [index, setIndex] = useState(startIndex);
     const [progress, setProgress] = useState(0);
     const rafRef = useRef<number>(0);
@@ -79,7 +80,7 @@ export function StatusViewer({ statuses, startIndex, onClose, onViewed }: Props)
 
     const handlePointerDown = () => {
         pausedRef.current = true;
-        pauseOffsetRef.current -= Date.now(); // will be subtracted from elapsed
+        pauseOffsetRef.current -= Date.now();
     };
 
     const handlePointerUp = () => {
@@ -94,7 +95,7 @@ export function StatusViewer({ statuses, startIndex, onClose, onViewed }: Props)
             {/* Close on backdrop click */}
             <div className="absolute inset-0" onClick={onClose} />
 
-            <div className="relative mx-auto flex h-full w-full max-w-sm flex-col sm:h-[85vh] sm:rounded-2xl sm:overflow-hidden">
+            <div className="relative mx-auto flex h-full w-full max-w-sm flex-col sm:h-[85vh] sm:overflow-hidden sm:rounded-2xl">
                 {/* Progress strips */}
                 <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-3">
                     {statuses.map((s, i) => (
@@ -151,8 +152,15 @@ export function StatusViewer({ statuses, startIndex, onClose, onViewed }: Props)
                     )}
                 </div>
 
+                {/* Extra actions (e.g. Delete Status on own profile) */}
+                {extraActions && (
+                    <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center px-4" onClick={(e) => e.stopPropagation()}>
+                        {extraActions}
+                    </div>
+                )}
+
                 {/* Left / Right tap zones */}
-                <div className="absolute inset-0 z-10 flex" style={{ top: '80px' }}>
+                <div className="absolute inset-0 z-10 flex" style={{ top: '80px', bottom: extraActions ? '60px' : '0' }}>
                     <div className="h-full w-1/3 cursor-pointer" onClick={(e) => { e.stopPropagation(); goPrev(); }} />
                     <div className="h-full flex-1" />
                     <div className="h-full w-1/3 cursor-pointer" onClick={(e) => { e.stopPropagation(); goNext(); }} />

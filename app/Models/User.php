@@ -35,6 +35,8 @@ class User extends Authenticatable
         'stage',
         'interests',
         'avatar',
+        'cover_photo',
+        'onboarding_completed_at',
         'location',
         'linkedin_url',
         'website',
@@ -47,6 +49,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'onboarding_completed_at' => 'datetime',
         'password' => 'hashed',
         'looking_for' => 'array',
         'interests' => 'array',
@@ -80,15 +83,23 @@ class User extends Authenticatable
         ];
     }
 
-    protected $appends = ['profile_photo_url'];
+    protected $appends = ['profile_photo_url', 'cover_photo_url'];
 
     protected function profilePhotoUrl(): Attribute
     {
         return Attribute::get(function () {
-            // Check if avatar exists and return public URL, otherwise fallback to UI-Avatars
             return $this->avatar
                 ? Storage::disk('public')->url($this->avatar)
                 : 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=2DAB94&background=E6F6F4';
+        });
+    }
+
+    protected function coverPhotoUrl(): Attribute
+    {
+        return Attribute::get(function () {
+            return $this->cover_photo
+                ? Storage::disk('public')->url($this->cover_photo)
+                : null;
         });
     }
 

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Auth\UserRegisterController::register
-* @see app/Http/Controllers/Auth/UserRegisterController.php:15
+* @see app/Http/Controllers/Auth/UserRegisterController.php:16
 * @route '/user-register'
 */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\Auth\UserRegisterController::register
-* @see app/Http/Controllers/Auth/UserRegisterController.php:15
+* @see app/Http/Controllers/Auth/UserRegisterController.php:16
 * @route '/user-register'
 */
 register.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Auth\UserRegisterController::register
-* @see app/Http/Controllers/Auth/UserRegisterController.php:15
+* @see app/Http/Controllers/Auth/UserRegisterController.php:16
 * @route '/user-register'
 */
 register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Auth\UserRegisterController::register
-* @see app/Http/Controllers/Auth/UserRegisterController.php:15
+* @see app/Http/Controllers/Auth/UserRegisterController.php:16
 * @route '/user-register'
 */
 const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> 
 
 /**
 * @see \App\Http\Controllers\Auth\UserRegisterController::register
-* @see app/Http/Controllers/Auth/UserRegisterController.php:15
+* @see app/Http/Controllers/Auth/UserRegisterController.php:16
 * @route '/user-register'
 */
 registerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
