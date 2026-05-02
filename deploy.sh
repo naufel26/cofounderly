@@ -79,11 +79,10 @@ ok "Queue restart signal sent"
 
 # ─── 11. Restart Reverb ───────────────────────────────────────────────────────
 step "Restarting Reverb"
-if systemctl is-active --quiet reverb; then
-    systemctl restart reverb && ok "Reverb restarted via systemd"
+if command -v supervisorctl &>/dev/null; then
+    supervisorctl restart reverb && ok "Reverb restarted via Supervisor"
 else
-    warn "Reverb service not active — starting it"
-    systemctl start reverb && ok "Reverb started" || warn "Could not start Reverb — check: systemctl status reverb"
+    warn "supervisorctl not found — restart Reverb manually: supervisorctl restart reverb"
 fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────────
