@@ -77,12 +77,13 @@ step "Restarting queue workers"
 php artisan queue:restart
 ok "Queue restart signal sent"
 
-# ─── 11. Restart Reverb (if running under a process manager) ─────────────────
+# ─── 11. Restart Reverb ───────────────────────────────────────────────────────
 step "Restarting Reverb"
-if command -v supervisorctl &>/dev/null; then
-    supervisorctl restart reverb 2>/dev/null && ok "Reverb restarted via Supervisor" || warn "Reverb not found in Supervisor — restart it manually if needed"
+if systemctl is-active --quiet reverb; then
+    systemctl restart reverb && ok "Reverb restarted via systemd"
 else
-    warn "Supervisor not found — restart Reverb manually: php artisan reverb:start"
+    warn "Reverb service not active — starting it"
+    systemctl start reverb && ok "Reverb started" || warn "Could not start Reverb — check: systemctl status reverb"
 fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────────
