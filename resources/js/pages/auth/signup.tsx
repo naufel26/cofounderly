@@ -5,7 +5,6 @@ import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/hooks/use-toast';
 import MainLayout from '@/layouts/main-layout';
 // import { supabase } from '@/integrations/supabase/client';
 
@@ -98,7 +97,6 @@ const interestOptions = [
 export default function SignUp() {
     // const navigate = useNavigate();
     const [step, setStep] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
     // Inertia useForm hook replaces local useState for form data
     const { data, setData, post, processing, errors } = useForm({
         fullName: '',
@@ -141,7 +139,7 @@ export default function SignUp() {
     const isStepValid = () => {
         switch (step) {
             case 1:
-                return data.fullName && data.email && data.password.length >= 6;
+                return data.fullName && data.email && data.password.length >= 8;
             case 2:
                 return data.role;
             case 3:
@@ -155,23 +153,19 @@ export default function SignUp() {
         }
     };
 
+    const stepForError = (errs: Record<string, string>): number => {
+        if (errs.fullName || errs.email || errs.password || errs.tagline) return 1;
+        if (errs.role) return 2;
+        if (errs.lookingFor) return 3;
+        if (errs.stage) return 4;
+        if (errs.interests) return 5;
+        return 1;
+    };
+
     const handleCreateAccount = () => {
-        // Inertia post call to your Laravel route
         post('/user-register', {
-            onSuccess: () => {
-                toast({
-                    title: 'Account created!',
-                    description:
-                        "Welcome to Cofounderly. Let's build something great!",
-                });
-            },
-            onError: (errors) => {
-                // If Laravel validation fails, Inertia maps them to the 'errors' object
-                toast({
-                    title: 'Error creating account',
-                    description: 'Please check the form for errors.',
-                    variant: 'destructive',
-                });
+            onError: (errs) => {
+                setStep(stepForError(errs));
             },
         });
     };
@@ -243,19 +237,26 @@ export default function SignUp() {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="mt-1.5"
+                                            className={`mt-1.5 ${errors.fullName ? 'border-red-500' : ''}`}
                                         />
+                                        {errors.fullName && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.fullName}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="email">Email</Label>
                                         <Input
+                                            id="email"
                                             value={data.email}
                                             onChange={(e) =>
                                                 setData('email', e.target.value)
                                             }
+                                            className={`mt-1.5 ${errors.email ? 'border-red-500' : ''}`}
                                         />
                                         {errors.email && (
-                                            <p className="text-xs text-red-500">
+                                            <p className="mt-1 text-xs text-red-500">
                                                 {errors.email}
                                             </p>
                                         )}
@@ -267,7 +268,7 @@ export default function SignUp() {
                                         <Input
                                             id="password"
                                             type="password"
-                                            placeholder="Create a strong password (min 6 characters)"
+                                            placeholder="Create a strong password (min 8 characters)"
                                             value={data.password}
                                             onChange={(e) =>
                                                 handleInputChange(
@@ -275,8 +276,13 @@ export default function SignUp() {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="mt-1.5"
+                                            className={`mt-1.5 ${errors.password ? 'border-red-500' : ''}`}
                                         />
+                                        {errors.password && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.password}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="tagline">
@@ -295,8 +301,13 @@ export default function SignUp() {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="mt-1.5"
+                                            className={`mt-1.5 ${errors.tagline ? 'border-red-500' : ''}`}
                                         />
+                                        {errors.tagline && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.tagline}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -312,6 +323,9 @@ export default function SignUp() {
                                     Select the role that best describes you
                                 </p>
 
+                                {errors.role && (
+                                    <p className="mb-4 text-sm text-red-500">{errors.role}</p>
+                                )}
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {roleOptions.map((option) => (
                                         <button
@@ -355,6 +369,9 @@ export default function SignUp() {
                                     Select all that apply
                                 </p>
 
+                                {errors.lookingFor && (
+                                    <p className="mb-4 text-sm text-red-500">{errors.lookingFor}</p>
+                                )}
                                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                     {lookingForOptions.map((option) => (
                                         <button
@@ -402,6 +419,9 @@ export default function SignUp() {
                                     Where are you in your startup journey?
                                 </p>
 
+                                {errors.stage && (
+                                    <p className="mb-4 text-sm text-red-500">{errors.stage}</p>
+                                )}
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     {stageOptions.map((option) => (
                                         <button
@@ -445,6 +465,9 @@ export default function SignUp() {
                                     Select topics you're interested in
                                 </p>
 
+                                {errors.interests && (
+                                    <p className="mb-4 text-sm text-red-500">{errors.interests}</p>
+                                )}
                                 <div className="flex flex-wrap gap-3">
                                     {interestOptions.map((option) => (
                                         <button
@@ -476,7 +499,6 @@ export default function SignUp() {
                                 <Button
                                     variant="ghost"
                                     onClick={prevStep}
-                                    disabled={isLoading}
                                 >
                                     <ArrowLeft className="mr-2 h-4 w-4" />
                                     Back
