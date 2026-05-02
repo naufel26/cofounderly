@@ -45,7 +45,7 @@ ok "Packages discovered"
 
 # ─── 5. Generate Wayfinder types (must run before npm build) ─────────────────
 step "Generating Wayfinder types"
-php artisan wayfinder:generate --with-form
+php artisan wayfinder:generate --with-form || warn "Wayfinder generation had errors — using existing types"
 ok "Wayfinder types generated"
 
 # ─── 6. Frontend assets ───────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ step "Restarting Reverb"
 if command -v supervisorctl &>/dev/null; then
     supervisorctl restart reverb 2>/dev/null && ok "Reverb restarted via Supervisor" || warn "Reverb not found in Supervisor — restart it manually if needed"
 else
-    warn "Supervisor not found — restart Reverb manually: php artisan reverb:start --daemon"
+    warn "Supervisor not found — restart Reverb manually: php artisan reverb:start"
 fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────────

@@ -47,16 +47,6 @@ class User extends Authenticatable
         'experience',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'onboarding_completed_at' => 'datetime',
-        'password' => 'hashed',
-        'looking_for' => 'array',
-        'interests' => 'array',
-        'skills' => 'array',
-        'experience' => 'array',
-    ];
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -70,16 +60,19 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'onboarding_completed_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            'password' => 'hashed',
+            'looking_for' => 'array',
+            'interests' => 'array',
+            'skills' => 'array',
+            'experience' => 'array',
         ];
     }
 

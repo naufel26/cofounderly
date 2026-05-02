@@ -168,7 +168,7 @@ export default function Show() {
         <>
         <div className="min-h-screen bg-slate-50 pb-20">
             <Head>
-            <title>{profile_user?.name} — {profile_user?.tagline ?? profile_user?.role ?? 'Member'} | Cofounderly</title>
+            <title>{`${profile_user?.name} — ${profile_user?.tagline ?? profile_user?.role ?? 'Member'} | Cofounderly`}</title>
             <meta name="description" content={profile_user?.bio ?? profile_user?.tagline ?? `${profile_user?.name} is on Cofounderly — Bangladesh's startup community.`} />
             <meta property="og:type" content="profile" />
             <meta property="og:title" content={`${profile_user?.name} | Cofounderly`} />
