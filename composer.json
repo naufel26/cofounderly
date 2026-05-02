@@ -92,9 +92,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-                "laravel/boost"
-            ]
+            "dont-discover": []
         }
     },
     "config": {
