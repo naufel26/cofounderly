@@ -47,6 +47,7 @@ class User extends Authenticatable
         'business_stage',
         'skills',
         'experience',
+        'last_seen_at',
     ];
 
     /**
@@ -75,6 +76,7 @@ class User extends Authenticatable
             'interests' => 'array',
             'skills' => 'array',
             'experience' => 'array',
+            'last_seen_at' => 'datetime',
         ];
     }
 

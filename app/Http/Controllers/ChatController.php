@@ -15,16 +15,18 @@ class ChatController extends Controller
 {
     public function conversations(Request $request): JsonResponse
     {
+        $userId = $request->user()->id;
+
         $conversations = $request->user()
             ->conversations()
-            ->with(['users:id,name,avatar', 'latestMessage'])
-            ->withCount(['messages as unread_count' => function ($query) use ($request) {
-                $query->whereNull('read_at')->where('sender_id', '!=', $request->user()->id);
+            ->with(['users:id,name,avatar,last_seen_at', 'latestMessage'])
+            ->withCount(['messages as unread_count' => function ($query) use ($userId) {
+                $query->whereNull('read_at')->where('sender_id', '!=', $userId);
             }])
             ->latest('updated_at')
             ->get()
-            ->map(function (Conversation $conversation) use ($request) {
-                $other = $conversation->users->firstWhere('id', '!=', $request->user()->id);
+            ->map(function (Conversation $conversation) use ($userId) {
+                $other = $conversation->users->firstWhere('id', '!=', $userId);
 
                 return [
                     'id' => $conversation->id,
@@ -32,11 +34,12 @@ class ChatController extends Controller
                         'id' => $other->id,
                         'name' => $other->name,
                         'profile_photo_url' => $other->profile_photo_url,
+                        'is_online' => $other->last_seen_at && $other->last_seen_at->gt(now()->subMinutes(5)),
                     ] : null,
                     'latest_message' => $conversation->latestMessage ? [
                         'body' => $conversation->latestMessage->body,
                         'created_at' => $conversation->latestMessage->created_at->toISOString(),
-                        'is_mine' => $conversation->latestMessage->sender_id === $request->user()->id,
+                        'is_mine' => $conversation->latestMessage->sender_id === $userId,
                     ] : null,
                     'unread_count' => $conversation->unread_count,
                 ];
@@ -63,19 +66,22 @@ class ChatController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'profile_photo_url' => $user->profile_photo_url,
+                'is_online' => $user->last_seen_at && $user->last_seen_at->gt(now()->subMinutes(5)),
             ],
         ]);
     }
 
     public function messages(Request $request, Conversation $conversation): JsonResponse
     {
+        $userId = $request->user()->id;
+
         abort_unless(
-            $conversation->users()->where('user_id', $request->user()->id)->exists(),
+            $conversation->users()->where('user_id', $userId)->exists(),
             403
         );
 
         $conversation->messages()
-            ->where('sender_id', '!=', $request->user()->id)
+            ->where('sender_id', '!=', $userId)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
@@ -91,6 +97,7 @@ class ChatController extends Controller
                 'body' => $message->body,
                 'sender_id' => $message->sender_id,
                 'created_at' => $message->created_at->toISOString(),
+                'read_at' => $message->read_at?->toISOString(),
                 'sender' => [
                     'id' => $message->sender->id,
                     'name' => $message->sender->name,
@@ -98,20 +105,30 @@ class ChatController extends Controller
                 ],
             ]);
 
-        return response()->json($messages);
+        $otherLastReadAt = $conversation->messages()
+            ->where('sender_id', $userId)
+            ->whereNotNull('read_at')
+            ->max('read_at');
+
+        return response()->json([
+            'messages' => $messages,
+            'other_last_read_at' => $otherLastReadAt,
+        ]);
     }
 
     public function sendMessage(Request $request, Conversation $conversation): JsonResponse
     {
+        $userId = $request->user()->id;
+
         abort_unless(
-            $conversation->users()->where('user_id', $request->user()->id)->exists(),
+            $conversation->users()->where('user_id', $userId)->exists(),
             403
         );
 
         $request->validate(['body' => ['required', 'string', 'max:5000']]);
 
         $message = $conversation->messages()->create([
-            'sender_id' => $request->user()->id,
+            'sender_id' => $userId,
             'body' => $request->body,
         ]);
 
@@ -124,7 +141,7 @@ class ChatController extends Controller
         }
 
         $conversation->users()
-            ->where('user_id', '!=', $request->user()->id)
+            ->where('user_id', '!=', $userId)
             ->get()
             ->each(fn ($recipient) => $recipient->notify(new NewMessageReceived($request->user(), $conversation)));
 
@@ -135,6 +152,7 @@ class ChatController extends Controller
             'body' => $message->body,
             'sender_id' => $message->sender_id,
             'created_at' => $message->created_at->toISOString(),
+            'read_at' => null,
             'sender' => [
                 'id' => $message->sender->id,
                 'name' => $message->sender->name,

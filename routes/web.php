@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\UserRegisterController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PostController;
@@ -82,6 +83,7 @@ Route::middleware(['auth', App\Http\Middleware\EnsureOnboarded::class])->group(f
 
     Route::get('/advisors', AdvisorController::class)->name('advisors');
     Route::get('/meetings', fn () => Inertia::render('meetings'))->name('meetings');
+    Route::get('/messages', MessagesController::class)->name('messages');
 
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

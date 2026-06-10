@@ -13,10 +13,11 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { SearchDropdown } from './SearchDropdown';
 
 export const TopNavigation = () => {
-    const { auth, unread_messages, url } = usePage().props as any;
+    const { auth, unread_messages } = usePage().props as any;
     const { url: pageUrl } = usePage();
     const user = auth?.user;
     const isOnFeeds = pageUrl.startsWith('/feeds');
+    const isOnMessages = pageUrl.startsWith('/messages');
     const [chatUnread, setChatUnread] = useState<number>(unread_messages ?? 0);
 
     useEffect(() => {
@@ -59,9 +60,9 @@ export const TopNavigation = () => {
                     </Link>
 
                     {/* Messages */}
-                    <button
-                        onClick={() => window.dispatchEvent(new CustomEvent('open-chat'))}
-                        className={`${navIconBase} ${navIconInactive}`}
+                    <Link
+                        href="/messages"
+                        className={`${navIconBase} ${isOnMessages ? navIconActive : navIconInactive}`}
                         title="Messages"
                     >
                         <MessageSquare className="h-5 w-5" />
@@ -70,7 +71,7 @@ export const TopNavigation = () => {
                                 {chatUnread > 9 ? '9+' : chatUnread}
                             </span>
                         )}
-                    </button>
+                    </Link>
 
                     {/* Notifications */}
                     <NotificationDropdown />
