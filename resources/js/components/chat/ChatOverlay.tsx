@@ -24,7 +24,9 @@ export function ChatOverlay() {
         if (res.ok) {
             const data: ConversationSummary[] = await res.json();
             setConversations(data);
-            setUnreadTotal(data.reduce((acc, c) => acc + c.unread_count, 0));
+            const total = data.reduce((acc, c) => acc + c.unread_count, 0);
+            setUnreadTotal(total);
+            window.dispatchEvent(new CustomEvent('chat-unread-updated', { detail: total }));
         }
         setLoadingConvs(false);
     }, []);

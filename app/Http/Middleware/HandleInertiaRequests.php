@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Message;
 use App\Models\ProfileView;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -49,6 +50,19 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 return ProfileView::where('profile_user_id', $request->user()->id)->count();
+            },
+            'unread_messages' => function () use ($request) {
+                if (! $request->user()) {
+                    return 0;
+                }
+
+                $userId = $request->user()->id;
+
+                return Message::query()
+                    ->whereHas('conversation', fn ($q) => $q->whereHas('users', fn ($q2) => $q2->where('users.id', $userId)))
+                    ->where('sender_id', '!=', $userId)
+                    ->whereNull('read_at')
+                    ->count();
             },
             'notifications' => function () use ($request) {
                 if (! $request->user()) {

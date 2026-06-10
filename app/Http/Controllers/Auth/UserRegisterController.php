@@ -20,9 +20,9 @@ class UserRegisterController extends Controller
             'email' => 'required|string|email|max:255|unique:'.User::class,
             'password' => ['required', 'string', Rules\Password::defaults()],
             'role' => 'required|string|in:founder,cofounder,investor,jobseeker,student,advisor',
-            'lookingFor' => 'required|array',
-            'stage' => 'required|string',
-            'interests' => 'required|array',
+            'lookingFor' => 'nullable|array',
+            'stage' => 'nullable|string',
+            'interests' => 'nullable|array',
             'tagline' => 'nullable|string|max:255',
         ]);
 
@@ -32,9 +32,9 @@ class UserRegisterController extends Controller
             'password' => Hash::make($request->password),
             'tagline' => $request->tagline,
             'role' => $request->role,
-            'looking_for' => $request->lookingFor,
-            'stage' => $request->stage,
-            'interests' => $request->interests,
+            'looking_for' => $request->lookingFor ?? [],
+            'stage' => $request->stage ?? '',
+            'interests' => $request->interests ?? [],
         ]);
 
         // Ensure the Spatie role exists before assigning it

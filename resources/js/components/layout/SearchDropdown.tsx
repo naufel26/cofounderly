@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Search, UserPlus, Clock, UserCheck, Users, Loader2 } from 'lucide-react';
+import { Clock, FileText, Loader2, Search, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { csrfToken } from '@/lib/utils';
@@ -15,6 +15,19 @@ type SearchUser = {
     connection_status: ConnectionStatus;
 };
 
+type SearchPost = {
+    id: number;
+    excerpt: string;
+    author_name: string;
+    author_photo: string;
+    author_role: string | null;
+};
+
+type SearchResults = {
+    people: SearchUser[];
+    posts: SearchPost[];
+};
+
 function useDebounce(value: string, delay: number) {
     const [debounced, setDebounced] = useState(value);
     useEffect(() => {
@@ -26,7 +39,7 @@ function useDebounce(value: string, delay: number) {
 
 export function SearchDropdown() {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<SearchUser[]>([]);
+    const [results, setResults] = useState<SearchResults>({ people: [], posts: [] });
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [focused, setFocused] = useState(false);
@@ -36,27 +49,28 @@ export function SearchDropdown() {
 
     useEffect(() => {
         if (debouncedQuery.length < 2) {
-            setResults([]);
+            setResults({ people: [], posts: [] });
             setOpen(false);
             return;
         }
 
         setLoading(true);
-        fetch(`/search/users?q=${encodeURIComponent(debouncedQuery)}`, {
+        fetch(`/search?q=${encodeURIComponent(debouncedQuery)}`, {
             headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
         })
             .then((r) => r.json())
-            .then((data: SearchUser[]) => {
+            .then((data: SearchResults) => {
                 setResults(data);
                 const map: Record<number, ConnectionStatus> = {};
-                data.forEach((u) => { map[u.id] = u.connection_status; });
+                data.people.forEach((u) => {
+                    map[u.id] = u.connection_status;
+                });
                 setStatuses(map);
                 setOpen(true);
             })
             .finally(() => setLoading(false));
     }, [debouncedQuery]);
 
-    // Close on outside click
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (!containerRef.current?.contains(e.target as Node)) {
@@ -73,9 +87,7 @@ export function SearchDropdown() {
         fetch(`/connections/${userId}`, {
             method: 'POST',
             headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
-        }).catch(() => {
-            setStatuses((prev) => ({ ...prev, [userId]: null }));
-        });
+        }).catch(() => setStatuses((prev) => ({ ...prev, [userId]: null })));
     };
 
     const handleCancel = (e: React.MouseEvent, userId: number) => {
@@ -84,9 +96,7 @@ export function SearchDropdown() {
         fetch(`/connections/${userId}`, {
             method: 'DELETE',
             headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
-        }).catch(() => {
-            setStatuses((prev) => ({ ...prev, [userId]: 'sent_pending' }));
-        });
+        }).catch(() => setStatuses((prev) => ({ ...prev, [userId]: 'sent_pending' })));
     };
 
     const handleAccept = (e: React.MouseEvent, userId: number) => {
@@ -95,9 +105,7 @@ export function SearchDropdown() {
         fetch(`/connections/${userId}/accept`, {
             method: 'POST',
             headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
-        }).catch(() => {
-            setStatuses((prev) => ({ ...prev, [userId]: 'received_pending' }));
-        });
+        }).catch(() => setStatuses((prev) => ({ ...prev, [userId]: 'received_pending' })));
     };
 
     const goToProfile = (userId: number) => {
@@ -106,7 +114,15 @@ export function SearchDropdown() {
         router.visit(`/profile/${userId}`);
     };
 
-    const renderAction = (user: SearchUser) => {
+    const goToPost = (postId: number) => {
+        setOpen(false);
+        setQuery('');
+        router.visit(`/posts/${postId}`);
+    };
+
+    const hasResults = results.people.length > 0 || results.posts.length > 0;
+
+    const renderConnectionAction = (user: SearchUser) => {
         const status = statuses[user.id];
 
         if (status === 'accepted') {
@@ -163,10 +179,10 @@ export function SearchDropdown() {
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => {
                         setFocused(true);
-                        if (results.length > 0) setOpen(true);
+                        if (hasResults) setOpen(true);
                     }}
                     onBlur={() => setFocused(false)}
-                    placeholder="Search founders, startups, ideas, advisors..."
+                    placeholder="Search people, startups, posts..."
                     className="h-11 w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-11 pr-10 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/10"
                 />
                 {loading && (
@@ -174,44 +190,79 @@ export function SearchDropdown() {
                 )}
             </div>
 
-            {open && results.length > 0 && (
+            {open && (
                 <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl">
-                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        People
-                    </p>
-                    {results.map((user) => (
-                        <button
-                            key={user.id}
-                            onClick={() => goToProfile(user.id)}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50"
-                        >
-                            <Avatar className="size-10 shrink-0">
-                                <AvatarImage src={user.profile_photo_url} />
-                                <AvatarFallback className="bg-[#E6F6F4] text-xs font-bold text-[#2DAB94]">
-                                    {user.name.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-bold text-slate-900">{user.name}</p>
-                                {(user.role || user.tagline) && (
-                                    <p className="truncate text-[11px] text-slate-400">
-                                        {user.role && (
-                                            <span className="font-medium text-[#2DAB94]">{user.role}</span>
-                                        )}
-                                        {user.role && user.tagline && ' · '}
-                                        {user.tagline}
+                    {!hasResults ? (
+                        <div className="px-4 py-6 text-center">
+                            <p className="text-sm text-slate-400">No results for "{debouncedQuery}"</p>
+                        </div>
+                    ) : (
+                        <>
+                            {results.people.length > 0 && (
+                                <div>
+                                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                        People
                                     </p>
-                                )}
-                            </div>
-                            {renderAction(user)}
-                        </button>
-                    ))}
-                </div>
-            )}
+                                    {results.people.map((user) => (
+                                        <button
+                                            key={user.id}
+                                            onClick={() => goToProfile(user.id)}
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                                        >
+                                            <Avatar className="size-10 shrink-0">
+                                                <AvatarImage src={user.profile_photo_url} />
+                                                <AvatarFallback className="bg-[#E6F6F4] text-xs font-bold text-[#2DAB94]">
+                                                    {user.name.substring(0, 2).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-bold text-slate-900">{user.name}</p>
+                                                {(user.role || user.tagline) && (
+                                                    <p className="truncate text-[11px] text-slate-400">
+                                                        {user.role && (
+                                                            <span className="font-medium text-[#2DAB94]">{user.role}</span>
+                                                        )}
+                                                        {user.role && user.tagline && ' · '}
+                                                        {user.tagline}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            {renderConnectionAction(user)}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
 
-            {open && results.length === 0 && !loading && debouncedQuery.length >= 2 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 rounded-2xl border border-slate-100 bg-white px-4 py-6 text-center shadow-xl">
-                    <p className="text-sm text-slate-400">No users found for "{debouncedQuery}"</p>
+                            {results.posts.length > 0 && (
+                                <div className={results.people.length > 0 ? 'border-t border-slate-50' : ''}>
+                                    <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                        Posts
+                                    </p>
+                                    {results.posts.map((post) => (
+                                        <button
+                                            key={post.id}
+                                            onClick={() => goToPost(post.id)}
+                                            className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                                        >
+                                            <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                                                <FileText className="size-4" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="line-clamp-2 text-[13px] leading-snug text-slate-800">
+                                                    {post.excerpt}
+                                                </p>
+                                                <p className="mt-0.5 text-[11px] text-slate-400">
+                                                    by{' '}
+                                                    <span className="font-medium text-[#2DAB94]">{post.author_name}</span>
+                                                    {post.author_role && ` · ${post.author_role}`}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
         </div>

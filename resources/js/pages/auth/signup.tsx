@@ -92,7 +92,23 @@ const interestOptions = [
     { id: 'hiring', label: 'Hiring / Jobs' },
     { id: 'mvp', label: 'Building MVP' },
     { id: 'growth', label: 'Growth & Scaling' },
+    { id: 'product-development', label: 'Product Development' },
+    { id: 'community-events', label: 'Community & Events' },
 ];
+
+function getPasswordStrength(password: string): { label: string; color: string; textColor: string; fraction: string } | null {
+    if (!password) return null;
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    if (score <= 2) return { label: 'Weak', color: 'bg-red-500', textColor: 'text-red-500', fraction: 'w-1/3' };
+    if (score <= 4) return { label: 'Medium', color: 'bg-amber-400', textColor: 'text-amber-500', fraction: 'w-2/3' };
+    return { label: 'Strong', color: 'bg-green-500', textColor: 'text-green-600', fraction: 'w-full' };
+}
 
 export default function SignUp() {
     // const navigate = useNavigate();
@@ -169,6 +185,16 @@ export default function SignUp() {
             },
         });
     };
+
+    const handleSkip = () => {
+        if (step < TOTAL_STEPS) {
+            nextStep();
+        } else {
+            handleCreateAccount();
+        }
+    };
+
+    const passwordStrength = getPasswordStrength(data.password);
 
     return (
         <MainLayout title="Home Page">
@@ -282,6 +308,17 @@ export default function SignUp() {
                                             <p className="mt-1 text-xs text-red-500">
                                                 {errors.password}
                                             </p>
+                                        )}
+                                        {passwordStrength && !errors.password && (
+                                            <div className="mt-2">
+                                                <div className="mb-1 flex items-center justify-between text-xs">
+                                                    <span className="text-muted-foreground">Password strength</span>
+                                                    <span className={passwordStrength.textColor}>{passwordStrength.label}</span>
+                                                </div>
+                                                <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+                                                    <div className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color} ${passwordStrength.fraction}`} />
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                     <div>
@@ -494,39 +531,53 @@ export default function SignUp() {
                         )}
 
                         {/* Navigation */}
-                        <div className="mt-auto flex items-center justify-between pt-8">
-                            {step > 1 ? (
-                                <Button
-                                    variant="ghost"
-                                    onClick={prevStep}
-                                >
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Back
-                                </Button>
-                            ) : (
-                                <div />
-                            )}
+                        <div className="mt-auto pt-8">
+                            <div className="flex items-center justify-between">
+                                {step > 1 ? (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={prevStep}
+                                    >
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        Back
+                                    </Button>
+                                ) : (
+                                    <div />
+                                )}
 
-                            {step < TOTAL_STEPS ? (
-                                <Button
-                                    onClick={nextStep}
-                                    disabled={!isStepValid()}
-                                >
-                                    Continue
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                            ) : (
-                                <Button
-                                    variant="hero"
-                                    onClick={handleCreateAccount}
-                                    disabled={!isStepValid() || processing}
-                                >
-                                    {processing ? (
-                                        <Loader2 className="animate-spin" />
-                                    ) : (
-                                        'Create Account'
-                                    )}
-                                </Button>
+                                {step < TOTAL_STEPS ? (
+                                    <Button
+                                        onClick={nextStep}
+                                        disabled={!isStepValid()}
+                                    >
+                                        Continue
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="hero"
+                                        onClick={handleCreateAccount}
+                                        disabled={!isStepValid() || processing}
+                                    >
+                                        {processing ? (
+                                            <Loader2 className="animate-spin" />
+                                        ) : (
+                                            'Create Account'
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
+
+                            {step >= 3 && (
+                                <div className="mt-3 text-center">
+                                    <button
+                                        onClick={handleSkip}
+                                        disabled={processing}
+                                        className="text-muted-foreground text-sm underline underline-offset-4 transition-colors hover:text-foreground disabled:opacity-50"
+                                    >
+                                        Skip for now
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>

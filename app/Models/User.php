@@ -37,6 +37,8 @@ class User extends Authenticatable
         'avatar',
         'cover_photo',
         'onboarding_completed_at',
+        'google_id',
+        'linkedin_id',
         'location',
         'linkedin_url',
         'website',

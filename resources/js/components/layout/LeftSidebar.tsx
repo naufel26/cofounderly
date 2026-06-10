@@ -1,14 +1,15 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    Eye,
-    Users,
-    Clock,
-    UserX,
-    Send,
     Calendar,
+    CheckCircle2,
+    Circle,
+    Clock,
+    Eye,
     Search,
+    Send,
+    Users,
     UsersRound,
-    UserPlus,
+    UserX,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -24,6 +25,13 @@ interface ConnectionStats {
     pending_received: number;
     pending_sent: number;
 }
+
+type ProfileField = {
+    key: string;
+    label: string;
+    done: boolean;
+    href: string;
+};
 
 const SidebarLink = ({ icon, label, count, href }: SidebarLinkProps) => (
     <Link href={href} className="sidebar-link group w-full">
@@ -41,14 +49,52 @@ const SidebarLink = ({ icon, label, count, href }: SidebarLinkProps) => (
     </Link>
 );
 
+function profileCompletion(user: any): ProfileField[] {
+    return [
+        {
+            key: 'photo',
+            label: 'Add a profile photo',
+            done: !!user.avatar,
+            href: '/profile',
+        },
+        {
+            key: 'bio',
+            label: 'Write a bio',
+            done: !!user.bio && user.bio.trim().length > 0,
+            href: '/profile#bio',
+        },
+        {
+            key: 'skills',
+            label: 'List your skills',
+            done: Array.isArray(user.skills) && user.skills.length > 0,
+            href: '/profile#skills',
+        },
+        {
+            key: 'startup',
+            label: 'Set your startup stage',
+            done: !!user.stage && user.stage.trim().length > 0,
+            href: '/profile#startup',
+        },
+    ];
+}
+
 export const LeftSidebar = () => {
-    const { auth, connection_stats, profile_views_count } = usePage().props as { auth: { user: any }; connection_stats?: ConnectionStats; profile_views_count?: number };
+    const { auth, connection_stats, profile_views_count } = usePage().props as {
+        auth: { user: any };
+        connection_stats?: ConnectionStats;
+        profile_views_count?: number;
+    };
     const user = auth?.user;
     const stats: ConnectionStats = connection_stats ?? { connected: 0, pending_received: 0, pending_sent: 0 };
 
+    const fields = profileCompletion(user);
+    const completedCount = fields.filter((f) => f.done).length;
+    const completionPct = Math.round((completedCount / fields.length) * 100);
+    const incomplete = fields.filter((f) => !f.done);
+
     return (
         <aside className="sticky top-20 h-fit w-64 shrink-0 space-y-4">
-            {/* 1. Main Profile Card */}
+            {/* 1. Profile Card */}
             <div className="card-elevated overflow-hidden">
                 <div className="bg-gradient-hero h-16" />
                 <div className="px-4 pb-4">
@@ -62,14 +108,56 @@ export const LeftSidebar = () => {
                     </Link>
 
                     <Link href="/profile" className="mt-3 block hover:underline">
-                        <h3 className="text-foreground font-bold leading-tight">
-                            {user.name}
-                        </h3>
+                        <h3 className="text-foreground font-bold leading-tight">{user.name}</h3>
                     </Link>
                     <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                        {user.tagline ||
-                            'Building the future of startup ecosystems'}
+                        {user.tagline || 'Building the future of startup ecosystems'}
                     </p>
+
+                    {/* Profile completion */}
+                    <div className="mt-4 rounded-xl bg-slate-50 p-3">
+                        <div className="mb-1.5 flex items-center justify-between">
+                            <span className="text-xs font-medium text-slate-500">Profile complete</span>
+                            <span className="text-xs font-bold text-[#2DAB94]">{completionPct}%</span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
+                            <div
+                                className="h-full rounded-full bg-[#2DAB94] transition-all duration-500"
+                                style={{ width: `${completionPct}%` }}
+                            />
+                        </div>
+
+                        {incomplete.length > 0 && (
+                            <ul className="mt-2.5 space-y-1.5">
+                                {incomplete.map((f) => (
+                                    <li key={f.key}>
+                                        <Link
+                                            href={f.href}
+                                            className="flex items-center gap-2 text-[11px] text-slate-400 transition-colors hover:text-[#2DAB94]"
+                                        >
+                                            <Circle className="size-3 shrink-0 text-slate-300" />
+                                            {f.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                                {fields
+                                    .filter((f) => f.done)
+                                    .map((f) => (
+                                        <li key={f.key} className="flex items-center gap-2 text-[11px] text-slate-300">
+                                            <CheckCircle2 className="size-3 shrink-0 text-[#2DAB94]" />
+                                            {f.label}
+                                        </li>
+                                    ))}
+                            </ul>
+                        )}
+
+                        {completionPct === 100 && (
+                            <p className="mt-2 flex items-center gap-1 text-[11px] font-medium text-[#2DAB94]">
+                                <CheckCircle2 className="size-3" />
+                                Profile complete!
+                            </p>
+                        )}
+                    </div>
 
                     <div className="border-border mt-4 space-y-3 border-t pt-4">
                         <Link
@@ -82,9 +170,7 @@ export const LeftSidebar = () => {
                                     Who viewed my profile
                                 </span>
                             </div>
-                            <span className="text-primary text-xs font-bold">
-                                {profile_views_count ?? 0}
-                            </span>
+                            <span className="text-primary text-xs font-bold">{profile_views_count ?? 0}</span>
                         </Link>
 
                         <Link
@@ -94,9 +180,7 @@ export const LeftSidebar = () => {
                             <span className="text-muted-foreground group-hover:text-primary text-xs transition-colors">
                                 Connections
                             </span>
-                            <span className="text-primary text-xs font-bold">
-                                {stats.connected}
-                            </span>
+                            <span className="text-primary text-xs font-bold">{stats.connected}</span>
                         </Link>
                     </div>
                 </div>
@@ -134,34 +218,35 @@ export const LeftSidebar = () => {
                 </div>
             </div>
 
-            {/* 3. Advisor Card */}
+            {/* 3. Advisor & Team Card */}
             <div className="card-elevated p-2">
                 <h4 className="text-muted-foreground/70 px-3 py-2 text-[10px] font-bold uppercase tracking-widest">
                     Advisor & Team
                 </h4>
                 <div className="space-y-0.5">
                     <SidebarLink
-                        href="#"
+                        href="/meetings"
                         icon={<Calendar className="h-4 w-4" />}
                         label="Manage meetings"
-                        count={2}
                     />
-                    <SidebarLink
-                        href="#"
-                        icon={<Search className="h-4 w-4" />}
-                        label="Find an advisor"
-                    />
+                    <Link
+                        href="/advisors"
+                        className="sidebar-link group w-full"
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="text-muted-foreground group-hover:text-primary transition-colors">
+                                <Search className="h-4 w-4" />
+                            </span>
+                            <span className="text-sm font-medium">Find an advisor</span>
+                        </span>
+                        <span className="ml-auto rounded-full bg-[#F1B981]/20 px-2 py-0.5 text-[10px] font-bold text-[#E8972A]">
+                            New
+                        </span>
+                    </Link>
                     <SidebarLink
                         href="#"
                         icon={<UsersRound className="h-4 w-4" />}
                         label="Your team"
-                        count={4}
-                    />
-                    <SidebarLink
-                        href="#"
-                        icon={<UserPlus className="h-4 w-4" />}
-                        label="Requested teams"
-                        count={3}
                     />
                 </div>
             </div>

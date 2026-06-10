@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdvisorController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Auth\UserRegisterController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ConnectionController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\UserSearchController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +32,13 @@ Route::get('signup', function () {
 })->name('signup');
 
 Route::post('user-register', [UserRegisterController::class, 'store'])->name('user.register');
+
+Route::prefix('auth')->group(function () {
+    Route::get('/google/redirect', [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+    Route::get('/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+    Route::get('/linkedin/redirect', [SocialAuthController::class, 'redirectToLinkedIn'])->name('auth.linkedin.redirect');
+    Route::get('/linkedin/callback', [SocialAuthController::class, 'handleLinkedInCallback'])->name('auth.linkedin.callback');
+});
 
 // Onboarding (auth only, no EnsureOnboarded so new users can reach it)
 Route::middleware(['auth'])->group(function () {
@@ -68,6 +78,10 @@ Route::middleware(['auth', App\Http\Middleware\EnsureOnboarded::class])->group(f
     Route::delete('/statuses/{status}', [StatusController::class, 'destroy'])->name('statuses.destroy');
 
     Route::get('/search/users', UserSearchController::class)->name('users.search');
+    Route::get('/search', SearchController::class)->name('search');
+
+    Route::get('/advisors', AdvisorController::class)->name('advisors');
+    Route::get('/meetings', fn () => Inertia::render('meetings'))->name('meetings');
 
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
