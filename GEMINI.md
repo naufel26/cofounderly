@@ -9,12 +9,13 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
-- php - 8.4.18
+- php - 8.4.20
 - inertiajs/inertia-laravel (INERTIA) - v2
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
 - laravel/reverb (REVERB) - v1
+- laravel/socialite (SOCIALITE) - v5
 - laravel/wayfinder (WAYFINDER) - v0
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
@@ -24,6 +25,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - pestphp/pest (PEST) - v4
 - phpunit/phpunit (PHPUNIT) - v12
 - \@inertiajs/react (INERTIA) - v2
+- laravel-echo (ECHO) - v2
 - react (REACT) - v19
 - tailwindcss (TAILWINDCSS) - v4
 - \@laravel/vite-plugin-wayfinder (WAYFINDER) - v0

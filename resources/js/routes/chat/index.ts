@@ -82,7 +82,7 @@ conversations.form = conversationsForm
 
 /**
 * @see \App\Http\Controllers\ChatController::start
-* @see app/Http/Controllers/ChatController.php:48
+* @see app/Http/Controllers/ChatController.php:51
 * @route '/chat/conversations/{user}'
 */
 export const start = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ start.definition = {
 
 /**
 * @see \App\Http\Controllers\ChatController::start
-* @see app/Http/Controllers/ChatController.php:48
+* @see app/Http/Controllers/ChatController.php:51
 * @route '/chat/conversations/{user}'
 */
 start.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -130,7 +130,7 @@ start.url = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\ChatController::start
-* @see app/Http/Controllers/ChatController.php:48
+* @see app/Http/Controllers/ChatController.php:51
 * @route '/chat/conversations/{user}'
 */
 start.post = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -140,7 +140,7 @@ start.post = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\ChatController::start
-* @see app/Http/Controllers/ChatController.php:48
+* @see app/Http/Controllers/ChatController.php:51
 * @route '/chat/conversations/{user}'
 */
 const startForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -150,7 +150,7 @@ const startForm = (args: { user: number | { id: number } } | [user: number | { i
 
 /**
 * @see \App\Http\Controllers\ChatController::start
-* @see app/Http/Controllers/ChatController.php:48
+* @see app/Http/Controllers/ChatController.php:51
 * @route '/chat/conversations/{user}'
 */
 startForm.post = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -162,7 +162,7 @@ start.form = startForm
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 export const messages = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -177,7 +177,7 @@ messages.definition = {
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 messages.url = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -210,7 +210,7 @@ messages.url = (args: { conversation: number | { id: number } } | [conversation:
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 messages.get = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -220,7 +220,7 @@ messages.get = (args: { conversation: number | { id: number } } | [conversation:
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 messages.head = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -230,7 +230,7 @@ messages.head = (args: { conversation: number | { id: number } } | [conversation
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 const messagesForm = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -240,7 +240,7 @@ const messagesForm = (args: { conversation: number | { id: number } } | [convers
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 messagesForm.get = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -250,7 +250,7 @@ messagesForm.get = (args: { conversation: number | { id: number } } | [conversat
 
 /**
 * @see \App\Http\Controllers\ChatController::messages
-* @see app/Http/Controllers/ChatController.php:70
+* @see app/Http/Controllers/ChatController.php:74
 * @route '/chat/conversations/{conversation}/messages'
 */
 messagesForm.head = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -267,7 +267,7 @@ messages.form = messagesForm
 
 /**
 * @see \App\Http\Controllers\ChatController::send
-* @see app/Http/Controllers/ChatController.php:104
+* @see app/Http/Controllers/ChatController.php:119
 * @route '/chat/conversations/{conversation}/messages'
 */
 export const send = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -282,7 +282,7 @@ send.definition = {
 
 /**
 * @see \App\Http\Controllers\ChatController::send
-* @see app/Http/Controllers/ChatController.php:104
+* @see app/Http/Controllers/ChatController.php:119
 * @route '/chat/conversations/{conversation}/messages'
 */
 send.url = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -315,7 +315,7 @@ send.url = (args: { conversation: number | { id: number } } | [conversation: num
 
 /**
 * @see \App\Http\Controllers\ChatController::send
-* @see app/Http/Controllers/ChatController.php:104
+* @see app/Http/Controllers/ChatController.php:119
 * @route '/chat/conversations/{conversation}/messages'
 */
 send.post = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -325,7 +325,7 @@ send.post = (args: { conversation: number | { id: number } } | [conversation: nu
 
 /**
 * @see \App\Http\Controllers\ChatController::send
-* @see app/Http/Controllers/ChatController.php:104
+* @see app/Http/Controllers/ChatController.php:119
 * @route '/chat/conversations/{conversation}/messages'
 */
 const sendForm = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -335,7 +335,7 @@ const sendForm = (args: { conversation: number | { id: number } } | [conversatio
 
 /**
 * @see \App\Http\Controllers\ChatController::send
-* @see app/Http/Controllers/ChatController.php:104
+* @see app/Http/Controllers/ChatController.php:119
 * @route '/chat/conversations/{conversation}/messages'
 */
 sendForm.post = (args: { conversation: number | { id: number } } | [conversation: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
